@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calvary Livestream Troubleshooting</title>
+    <style>
+        /* ========== RESET & BASE STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        /* ========== HEADER ========== */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px 20px 30px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        /* ========== SEARCH BAR ========== */
+        .search-container {
+            max-width: 600px;
+            margin: -20px auto 0;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        #searchBar {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+
+        #searchBar:focus {
+            box-shadow: 0 6px 30px rgba(59,130,246,0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.3em;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* ========== CATEGORIES ========== */
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* ========== FAQ ITEMS ========== */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+
+        .faq-item.pinned {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .faq-question {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .faq-preview {
+            color: #666;
+            font-size: 0.95em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .faq-answer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+            color: #444;
+            line-height: 1.7;
+            display: none;
+        }
+
+        .faq-answer.expanded {
+            display: block;
+        }
+
+        .faq-answer h3 {
+            color: #1e3a8a;
+            font-size: 1.05em;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .faq-answer ul, .faq-answer ol {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .faq-answer li {
+            margin-bottom: 6px;
+        }
+
+        .faq-answer strong {
+            color: #1e3a8a;
+        }
+
+        .expand-icon {
+            color: #3b82f6;
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+
+        .faq-item.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        /* ========== PINNED SECTION ========== */
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pinned-section {
+            margin-bottom: 40px;
+        }
+
+        .pin-icon {
+            color: #f59e0b;
+        }
+
+        /* ========== NO RESULTS ========== */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-results-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .no-results h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+            font-size: 0.9em;
+            background: white;
+            margin-top: 50px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .report-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .report-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+            }
+
+            #searchBar {
+                font-size: 1em;
+                padding: 14px 45px 14px 16px;
+            }
+
+            .faq-question {
+                font-size: 1.05em;
+            }
+
+            .categories {
+                gap: 8px;
+            }
+
+            .category-btn {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <h1>🎥 Calvary Livestream Troubleshooting</h1>
+        <p class="subtitle">Quick solutions for common livestream issues</p>
+        
+        <!-- SEARCH BAR -->
+        <div class="search-container">
+            <input 
+                type="text" 
+                id="searchBar" 
+                placeholder="Search for a problem... (e.g., 'camera too dark')"
+                autocomplete="off"
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <!-- CATEGORY FILTERS -->
+        <div class="categories" id="categories">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="Setup/Shutdown">Setup/Shutdown</button>
+            <button class="category-btn" data-category="Video">Video</button>
+            <button class="category-btn" data-category="Audio">Audio</button>
+            <button class="category-btn" data-category="Networking">Networking</button>
+            <button class="category-btn" data-category="Stream Deck">Stream Deck</button>
+            <button class="category-btn" data-category="Software">Software</button>
+        </div>
+
+        <!-- PINNED FAQs -->
+        <div class="pinned-section" id="pinnedSection">
+            <h2 class="section-title">
+                <span class="pin-icon">📌</span>
+                Most Common Issues
+            </h2>
+            <div class="faq-list" id="pinnedList"></div>
+        </div>
+
+        <!-- ALL FAQs -->
+        <div id="allSection">
+            <h2 class="section-title">All Troubleshooting Guides</h2>
+            <div class="faq-list" id="faqList"></div>
+        </div>
+
+        <!-- NO RESULTS MESSAGE -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">🔍</div>
+            <h2>No matches found</h2>
+            <p>Try different keywords or browse all FAQs above</p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>Last Updated:</strong> October 2025</p>
+        <p>Calvary San Mateo A/V Team</p>
+        <a href="mailto:av@calvarysanmateo.org?subject=Livestream%20Troubleshooting%20Issue&body=Please%20describe%20the%20issue%20or%20missing%20information:" class="report-btn">
+            📧 Report an Issue
+        </a>
+    </footer>
+
+    <!-- FUSE.JS LIBRARY (Fuzzy Search) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script>
+        // ========== FAQ DATA ==========
+        const faqData = [
+            {
+                id: 1,
+                question: "Complete Startup Procedure (Before Service)",
+                category: "Setup/Shutdown",
+                pinned: true,
+                answer: `<h3>Step-by-Step Startup:</h3>
+<ol>
+    <li><strong>Uncover all equipment:</strong> Remove black cloth covers from Camera 1, Camera 2, LG monitor, MacBook Pro, Dell curved monitor, and Stream Deck/ATEM.</li>
+    <li><strong>Remove lens caps:</strong> Take off lens caps from both Blackmagic Pocket Cinema Camera 4K cameras.</li>
+    <li><strong>Turn on ATEM FIRST:</strong> Plug in and screw in the power cable to the back right of the ATEM Mini Pro. This should always be turned on first.</li>
+    <li><strong>Turn on cameras:</strong> Use the sliding switch to power on both Blackmagic cameras (Camera 1 upstairs, Camera 2).</li>
+    <li><strong>Turn on MacBook Pro:</strong> Open the MacBook - it should automatically turn on or wake. If not, press the power button. Log in with password "ccsm".</li>
+    <li><strong>Check Dell curved monitor:</strong> Power on the Dell monitor if it doesn't turn on automatically (button on bottom far right).</li>
+    <li><strong>Check LG monitor:</strong> The monitor to the left of the docking station should turn on automatically.</li>
+    <li><strong>Check docking station light:</strong> The Anker 575 USB-C docking station should show a faint BLUE light. If green or off, troubleshoot the connection.</li>
+    <li><strong>Launch Companion:</strong> Open Companion app from the dock to initialize the Stream Deck (buttons should light up).</li>
+    <li><strong>Setup QuickTime for lobby/patio TVs:</strong> Launch QuickTime Player → New Movie Recording → Set camera to "Blackmagic Design" → Drag window to LG monitor → Click green button for fullscreen.</li>
+    <li><strong>Adjust camera brightness:</strong> Use ATEM Software Control to adjust Gain (+14dB) and Aperture for both cameras until picture looks good.</li>
+    <li><strong>Check audio:</strong> Turn on MIC1 in ATEM, verify sound levels are just above -10dB on Dell monitor. Use headset to test audio quality.</li>
+    <li><strong>Test Restream connection:</strong> Open Chrome → Restream → Connect to OBS → Toggle all streams "ON" briefly to test, then toggle "OFF".</li>
+    <li><strong>Test ATEM stream:</strong> Press ON AIR on ATEM to test, verify "ON AIR" shows in red on Dell monitor, then press OFF.</li>
+</ol>
+
+<h3>Equipment Power Order:</h3>
+<p><strong>ATEM → Cameras → MacBook → Monitors</strong></p>`
+            },
+            {
+                id: 2,
+                question: "Complete Shutdown Procedure (After Service)",
+                category: "Setup/Shutdown",
+                pinned: true,
+                answer: `<h3>Step-by-Step Shutdown:</h3>
+<ol>
+    <li><strong>End the livestream:</strong> Press FTB (Fade to Black) on switcher, then press OFF under ON AIR. On Restream website, toggle all destinations OFF.</li>
+    <li><strong>Switch HDMI input FIRST:</strong> On the HDMI switch (next to LG monitor), press "SWITCH" button to change to Input 2 (SLIDES). This allows lobby TV to continue showing slides.</li>
+    <li><strong>Shut down MacBook Pro:</strong> Apple menu → Shut Down (uncheck "reopen windows"). Close lid after shutdown.</li>
+    <li><strong>Turn off cameras:</strong> Use sliding switch to power off both Blackmagic Pocket Cinema Cameras.</li>
+    <li><strong>Replace lens caps:</strong> Put lens caps back on both cameras.</li>
+    <li><strong>Turn off Dell monitor:</strong> Press power button.</li>
+    <li><strong>Turn off LG monitor:</strong> Press power button if needed.</li>
+    <li><strong>Unplug ATEM LAST:</strong> Unscrew and pull out the power plug from the ATEM Mini Pro. ATEM should always be turned off last.</li>
+    <li><strong>Cover all equipment:</strong> Place labeled black cloth covers over Camera 1, Camera 2, LG monitor, MacBook Pro, Dell curved monitor, and Stream Deck/ATEM.</li>
+    <li><strong>Leave docking station on:</strong> The Anker 575 dock should remain powered on with a blue light.</li>
+</ol>
+
+<h3>Equipment Power-Off Order:</h3>
+<p><strong>MacBook → Cameras → Monitors → ATEM (last)</strong></p>
+
+<h3>Critical Notes:</h3>
+<ul>
+    <li>Always switch HDMI to Input 2 BEFORE shutdown so lobby has slides</li>
+    <li>ATEM is ALWAYS last to turn off, first to turn on</li>
+    <li>Stream Deck shuts off automatically when MacBook shuts down</li>
+</ul>`
+            },
+            {
+                id: 3,
+                question: "Cameras look dark or dim",
+                category: "Video",
+                pinned: true,
+                answer: `<h3>Why This Happens:</h3>
+<p>The Blackmagic Pocket Cinema Camera 4K cameras often look dark without brightness adjustments. This is normal and needs to be adjusted at the start of every service.</p>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Display Camera 2 only:</strong> On the ATEM switcher, press the small "2" button (not the big red one) to display Camera 2 on the Dell monitor instead of Multiview.</li>
+    <li><strong>Launch ATEM Software Control:</strong> Open the app on the MacBook Pro.</li>
+    <li><strong>Go to Camera page:</strong> Click "Camera" at the bottom of the ATEM Software Control window if not already there.</li>
+    <li><strong>Baseline adjustments:</strong>
+        <ul>
+            <li>Set <strong>Gain to +14 dB</strong></li>
+            <li><strong>Aperture:</strong> Drag the button in the middle of the adjustment window all the way to the TOP and keep it in the middle (horizontally)</li>
+        </ul>
+    </li>
+    <li><strong>Fine-tune:</strong> Adjust Gain up/down and/or drag Aperture downward (keeping it centered) until the picture looks good on the Dell monitor. This is subjective - just do your best.</li>
+    <li><strong>Repeat for Camera 1:</strong> Press the small "1" button on the switcher to display Camera 1, then repeat steps 4-5.</li>
+    <li><strong>Return to Multiview:</strong> Press the M/V button on the switcher to see all cameras again.</li>
+</ol>
+
+<h3>Quick Reference:</h3>
+<ul>
+    <li><strong>Gain:</strong> Start at +14dB, adjust up if still too dark</li>
+    <li><strong>Aperture:</strong> Start at top-center, drag down if too bright</li>
+    <li>Adjust until picture looks natural and well-lit</li>
+</ul>
+
+<h3>Note:</h3>
+<p>Camera brightness should be adjusted EVERY service during setup. Settings don't save between sessions.</p>`
+            },
+            {
+                id: 4,
+                question: "Camera out of focus or blurry",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>Two Methods for Focusing:</h3>
+
+<h3>Method 1: Physical Focus Adjustment (Best for Camera 2)</h3>
+<ol>
+    <li>Camera 2 is right next to the livestream workstation, so it's easy to reach.</li>
+    <li>Manually adjust the focus ring on the camera lens while watching the Dell monitor.</li>
+    <li>Rotate until the image is sharp and clear.</li>
+</ol>
+
+<h3>Method 2: Software Focus (Best for Camera 1)</h3>
+<p>Camera 1 is upstairs and far away, so software focus is easier:</p>
+<ol>
+    <li><strong>Display Camera 1:</strong> Press the small "1" button on the switcher.</li>
+    <li><strong>Open ATEM Software Control:</strong> Switch to the Camera page.</li>
+    <li><strong>Use Software Focus slider:</strong> In the ATEM Software Control window, below the Aperture adjustment area, there's a Focus slider. Adjust it left/right until the image is sharp.</li>
+    <li><strong>Return to Multiview:</strong> Press M/V on the switcher.</li>
+</ol>
+
+<h3>Best Practice:</h3>
+<ul>
+    <li>Check focus during pre-service setup</li>
+    <li>If someone moves a camera during service, you may need to refocus</li>
+    <li>Focus should be checked AFTER adjusting brightness (Gain/Aperture)</li>
+</ul>`
+            },
+            {
+                id: 5,
+                question: "QuickTime not showing video to lobby/patio TVs",
+                category: "Software",
+                pinned: false,
+                answer: `<h3>QuickTime Setup is Required:</h3>
+<p>The lobby and patio TVs receive their signal from QuickTime Player running on the MacBook Pro, which displays the ATEM Program output via the LG monitor.</p>
+
+<h3>Step-by-Step Setup:</h3>
+<ol>
+    <li><strong>Launch QuickTime Player:</strong> Open from the dock or Applications.</li>
+    <li><strong>Start New Movie Recording:</strong>
+        <ul>
+            <li>File menu → New Movie Recording, OR</li>
+            <li>Right-click QuickTime icon in dock → New Movie Recording, OR</li>
+            <li>Press OPT+CMD+N on keyboard</li>
+        </ul>
+    </li>
+    <li><strong>Configure the recording:</strong> The recording window may open on the LG monitor or MacBook screen.
+        <ul>
+            <li>Click the pulldown arrow next to the red record button</li>
+            <li>Choose <strong>"Blackmagic Design"</strong> for Camera input</li>
+        </ul>
+    </li>
+    <li><strong>Move to LG monitor:</strong> If the QuickTime window is on the MacBook screen, drag it to the left off the screen - it will move onto the LG monitor (they're extended displays).</li>
+    <li><strong>Make fullscreen:</strong> Click the green button in top left of the Movie Recording window to expand to fullscreen on the LG monitor.</li>
+    <li><strong>Verify:</strong> The LG monitor should now show the ATEM Program output, which feeds to lobby and patio TVs.</li>
+</ol>
+
+<h3>Troubleshooting:</h3>
+<ul>
+    <li><strong>No video in QuickTime:</strong> Make sure "Blackmagic Design" is selected as the camera input (not FaceTime camera)</li>
+    <li><strong>Can't drag window to LG monitor:</strong> The LG monitor and MacBook are extended displays - move mouse to the left edge of MacBook screen to reach LG monitor</li>
+    <li><strong>Lobby/Patio TVs blank:</strong> Check HDMI extender (may need power cycle), verify QuickTime is fullscreen on LG monitor</li>
+</ul>
+
+<h3>Note:</h3>
+<p>Audio for lobby/patio TVs comes from the soundboard, not QuickTime. QuickTime only provides video.</p>`
+            },
+            {
+                id: 6,
+                question: "No sound on livestream",
+                category: "Audio",
+                pinned: true,
+                answer: `<h3>Audio Signal Path:</h3>
+<p><strong>Behringer X32 Soundboard → Dual ¼" to ⅛" TRS Cable → ATEM Mic 1 → Restream</strong></p>
+
+<h3>Likely Causes:</h3>
+<ul>
+    <li>ATEM Mic 1 input is muted or turned down</li>
+    <li>X32 matrix output is muted or turned down</li>
+    <li>X32 mixbus is muted (less common)</li>
+    <li>Audio cable disconnected</li>
+    <li>Equalizer/Compressor/Limiter turned ON in ATEM (should be OFF)</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check ATEM Mic 1 physical button:</strong> On the ATEM switcher, press the ON button under MIC1. It should light up red when on.</li>
+    <li><strong>Check audio levels on Dell monitor:</strong> Look at the Audio pane on the Dell monitor. You should see green bars moving on MIC1 and PGM when someone speaks. Levels should be just above -10dB (just hitting the red zone).</li>
+    <li><strong>Check ATEM Software Control:</strong> Open ATEM Software Control → Audio page. Ensure Mic 1 fader is around -10dB to 0dB and NOT muted.</li>
+    <li><strong>Check X32 matrix:</strong> On the Behringer X32 soundboard, navigate to matrix settings. Find the matrix output for livestream (usually Matrix 1 or 2). Verify it's unmuted and volume is around 0dB.</li>
+    <li><strong>Check X32 mixbus:</strong> Verify the mixbus feeding the matrix is unmuted.</li>
+    <li><strong>Verify cable connection:</strong> Check that the dual ¼″ to ⅛″ TRS cable is firmly connected from X32 output to ATEM Mic 1 input.</li>
+    <li><strong>Turn off audio processing:</strong> Use Stream Deck Page 3 → Press "Sound Setup" button. This turns off Equalizer, Compressor, and Limiter (they should all be OFF).</li>
+    <li><strong>Test with headset:</strong> Use the headset stored behind the Dell monitor to listen to the livestream audio and verify sound quality.</li>
+</ol>
+
+<h3>Quick Test:</h3>
+<p>Watch the audio meter for Mic 1 on the Dell monitor while someone speaks into a microphone. If the levels aren't moving, the issue is with the X32 or cable.</p>`
+            },
+            {
+                id: 7,
+                question: "Audio Equalizer, Compressor, or Limiter causing issues",
+                category: "Audio",
+                pinned: false,
+                answer: `<h3>Important: These Should ALL Be OFF</h3>
+<p>The ATEM's built-in audio processing (Equalizer, Compressor, Limiter) should be turned OFF for livestream audio. These settings can cause audio distortion or level issues.</p>
+
+<h3>Quick Method (Recommended):</h3>
+<ol>
+    <li><strong>Use Stream Deck:</strong> Navigate to Stream Deck Page 3 (press "Up" twice from Page 1).</li>
+    <li><strong>Press "Sound Setup" button:</strong> This automatically turns off Equalizer, Compressor, and Limiter for both Mic 1 and Master.</li>
+    <li><strong>Check audio levels:</strong> After pressing Sound Setup, audio may be louder. Adjust volume with +/- buttons on Stream Deck Page 3, or use volume arrows under MIC1 on the ATEM switcher.</li>
+</ol>
+
+<h3>Manual Method (If Stream Deck Isn't Working):</h3>
+<ol>
+    <li><strong>Open ATEM Software Control:</strong> Switch to the Audio page.</li>
+    <li><strong>For Mic 1:</strong>
+        <ul>
+            <li>Click on "Equalizer" area under Mic 1 → Toggle Equalizer OFF</li>
+            <li>Click on "Dynamics" area under Mic 1 → Turn Compressor OFF → Turn Limiter OFF</li>
+        </ul>
+    </li>
+    <li><strong>For Master:</strong>
+        <ul>
+            <li>Repeat the same steps for Master sound options</li>
+            <li>Turn off Equalizer, Compressor, and Limiter</li>
+        </ul>
+    </li>
+    <li><strong>Readjust sound level:</strong> Sound will often be higher after turning these off. Adjust to keep levels just above -10dB.</li>
+</ol>
+
+<h3>Why This Matters:</h3>
+<p>The X32 soundboard already handles all audio processing. Having the ATEM also process audio causes double-processing, which degrades audio quality and can cause unexpected level changes.</p>
+
+<h3>Target Audio Level:</h3>
+<p>Audio should be just above -10dB on the Dell monitor meters - just hitting the red zone but not constantly in the red.</p>`
+            },
+            {
+                id: 8,
+                question: "Livestream audio too quiet or too loud",
+                category: "Audio",
+                pinned: false,
+                answer: `<h3>Target Level:</h3>
+<p>Audio should be just above -10dB on the Dell monitor meters - just hitting the red zone during speech/music peaks.</p>
+
+<h3>Quick Adjustments:</h3>
+
+<h3>Method 1: ATEM Switcher (Physical)</h3>
+<ol>
+    <li>Locate the volume up/down arrows under the MIC1 ON button on the ATEM switcher.</li>
+    <li>Press up arrow to increase volume, down arrow to decrease.</li>
+    <li>Watch the audio meters on the Dell monitor while adjusting.</li>
+</ol>
+
+<h3>Method 2: Stream Deck (Page 3)</h3>
+<ol>
+    <li>Navigate to Stream Deck Page 3 (press "Up" twice from Page 1).</li>
+    <li>Use the "-" button to decrease volume or "+" button to increase.</li>
+    <li>Watch the Dell monitor audio meters while adjusting.</li>
+</ol>
+
+<h3>Method 3: ATEM Software Control</h3>
+<ol>
+    <li>Open ATEM Software Control on MacBook.</li>
+    <li>Switch to Audio page.</li>
+    <li>Adjust the Mic 1 volume slider up or down.</li>
+</ol>
+
+<h3>If Still Too Quiet or Loud:</h3>
+<ol>
+    <li><strong>Check X32 matrix level:</strong> On the Behringer X32, the matrix output feeding the livestream should be around 0dB.</li>
+    <li><strong>Check X32 mixbus:</strong> Verify the mixbus levels are appropriate for vocals and music.</li>
+    <li><strong>Work with sound technician:</strong> If ATEM adjustments aren't enough, the sound tech may need to adjust the X32 mixbus or matrix levels.</li>
+</ol>
+
+<h3>Best Practice:</h3>
+<ul>
+    <li>Set audio levels during sound check before service</li>
+    <li>Use the headset (stored behind Dell monitor) to monitor livestream audio quality</li>
+    <li>Make small adjustments - big changes can cause distortion</li>
+    <li>Compare to previous successful streams if possible</li>
+</ul>`
+            },
+            {
+                id: 9,
+                question: "What to do if Restream is freezing and/or disconnecting",
+                category: "Networking",
+                pinned: true,
+                answer: `<h3>Likely Causes:</h3>
+<ul>
+    <li>Poor or unstable internet connection</li>
+    <li>Restream software needs restart</li>
+    <li>MacBook Pro performance issues</li>
+    <li>Ethernet connection problem via Anker 575 dock</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check internet connection:</strong> Open a browser and test if websites load quickly. Run a speed test if available.</li>
+    <li><strong>Verify Ethernet connection:</strong> Make sure the Ethernet cable is securely plugged into the Anker 575 dock. The dock light should be BLUE. Try unplugging and reconnecting the Ethernet cable.</li>
+    <li><strong>Check Dell monitor livestream pane:</strong> Look at the second frame from the left on the bottom. It should show "ON AIR" in red, a non-zero DATA RATE Mb/s, and "OK" under CACHE.</li>
+    <li><strong>Restart Restream page:</strong> In Chrome, refresh the Restream page (Cmd+R) or close and reopen the browser tab.</li>
+    <li><strong>Reduce stream quality:</strong> In Restream settings, temporarily lower the bitrate or resolution if the problem persists.</li>
+    <li><strong>Restart the MacBook:</strong> If nothing else works, do a full restart of the MacBook Pro.</li>
+</ol>
+
+<h3>Prevention:</h3>
+<p>Always start Restream at least 10-15 minutes before service to test stability. Toggle streams ON briefly to test YouTube and Facebook connections, then toggle OFF until service starts.</p>`
+            },
+            {
+                id: 10,
+                question: "ON AIR button pressed but stream not going live",
+                category: "Networking",
+                pinned: false,
+                answer: `<h3>The Problem:</h3>
+<p>Pressing the ON AIR button on the ATEM switcher enables the stream output, but Restream must also be configured to send to YouTube and Facebook.</p>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check ATEM ON AIR status:</strong> The ON AIR button on the switcher should be lit up. If not, press it.</li>
+    <li><strong>Check Dell monitor:</strong> Look at the Livestream pane (second from left on bottom). It should show "ON AIR" in red, a non-zero DATA RATE Mb/s, and "OK" under CACHE. If it shows "OFF", press ON AIR on the switcher.</li>
+    <li><strong>Open Restream in Chrome:</strong> Go to the Restream website (should be bookmarked in Chrome).</li>
+    <li><strong>Check connection:</strong> Click "Connect to OBS, Zoom..." if not already connected.</li>
+    <li><strong>Toggle destinations ON:</strong> Click "Toggle all ON" to enable streaming to YouTube, Facebook, and any other platforms.</li>
+    <li><strong>Verify camera signal:</strong> The Restream website window should show the live camera feed from your stream.</li>
+</ol>
+
+<h3>Quick Checklist:</h3>
+<ul>
+    <li>✅ ATEM ON AIR button is lit</li>
+    <li>✅ Dell monitor shows "ON AIR" in red</li>
+    <li>✅ Restream connected to switcher</li>
+    <li>✅ Restream destinations toggled ON</li>
+    <li>✅ Camera signal visible in Restream window</li>
+</ul>
+
+<h3>Note:</h3>
+<p>The ATEM sends the signal to Restream.io, which then distributes it to YouTube and Facebook. Both the ATEM and Restream must be configured correctly for the stream to go live.</p>`
+            },
+            {
+                id: 11,
+                question: "Restream website showing no camera signal",
+                category: "Networking",
+                pinned: false,
+                answer: `<h3>Symptoms:</h3>
+<ul>
+    <li>Restream website window is blank or shows "No Signal"</li>
+    <li>Stream appears to be running but no video is visible</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check ATEM ON AIR status:</strong> Make sure the ON AIR button on the ATEM switcher is pressed and lit up.</li>
+    <li><strong>Check Dell monitor livestream pane:</strong> Verify it shows "ON AIR" in red with a non-zero DATA RATE. If it shows "OFF", press ON AIR on the switcher.</li>
+    <li><strong>Reconnect Restream to switcher:</strong> In the Restream website, click "Connect to OBS, Zoom..." This connects Restream to the ATEM output.</li>
+    <li><strong>Check Ethernet connection:</strong> Verify the Ethernet cable is plugged into the Anker 575 dock and the dock light is BLUE.</li>
+    <li><strong>Restart ATEM streaming:</strong> Press OFF on the switcher, wait 5 seconds, then press ON AIR again.</li>
+    <li><strong>Refresh Restream page:</strong> In Chrome, press Cmd+R to reload the page, or close and reopen the browser tab.</li>
+    <li><strong>Check Program output:</strong> Verify the ATEM Program pane on the Dell monitor is showing video. If Program is blank, no video will be sent to Restream.</li>
+</ol>
+
+<h3>Quick Test:</h3>
+<p>If the Dell monitor shows "ON AIR" with a good DATA RATE but Restream shows no signal, the issue is likely with the connection between ATEM and Restream. Try pressing OFF then ON AIR again on the switcher.</p>`
+            },
+            {
+                id: 12,
+                question: "Monitor won't turn on automatically",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>Affected Monitors:</h3>
+<ul>
+    <li><strong>Dell Curved Monitor</strong> (multiview display, Model: 52721HGF)</li>
+    <li><strong>LG Monitor</strong> (21.5", Model: 22MP56HQ-P.AUS, to the left of docking station)</li>
+</ul>
+
+<h3>Solution for Dell Curved Monitor:</h3>
+<ol>
+    <li>The Dell monitor should turn on automatically when you power on the ATEM Mini Pro.</li>
+    <li>If it doesn't, locate the power button on the <strong>bottom far right</strong> of the monitor.</li>
+    <li>Press the power button manually to turn it on.</li>
+    <li>The monitor should display the ATEM multiview showing all camera inputs, Program, Preview, and audio meters.</li>
+</ol>
+
+<h3>Solution for LG Monitor:</h3>
+<ol>
+    <li>The LG monitor should turn on automatically when you power on the MacBook Pro.</li>
+    <li>If it doesn't, manually press the power button on the LG monitor.</li>
+    <li>This monitor is an extended display for the MacBook and will show QuickTime fullscreen (ATEM Program output for lobby/patio TVs).</li>
+</ol>
+
+<h3>Why This Happens:</h3>
+<p>Some monitors don't always detect the HDMI signal automatically on startup. It's a known quirk of the setup - just manually power them on if needed.</p>
+
+<h3>Note:</h3>
+<p>The LG monitor and MacBook screen are extended displays (not mirrored). Moving your mouse off the left edge of the MacBook screen will move it onto the LG monitor.</p>`
+            },
+            {
+                id: 13,
+                question: "Docking station light is green or off (not blue)",
+                category: "Networking",
+                pinned: false,
+                answer: `<h3>The Anker 575 USB-C Docking Station (Model A8392) should always show a faint BLUE light.</h3>
+
+<h3>If light is GREEN:</h3>
+<p><strong>Problem:</strong> The docking station is not getting a proper connection from the MacBook Pro.</p>
+<ol>
+    <li><strong>Check USB-C cable:</strong> Verify the USB-C cable is firmly plugged into both the dock and the MacBook Pro.</li>
+    <li><strong>Try the other USB-C port:</strong> The MacBook Pro has two USB-C ports. Try switching to the other one.</li>
+    <li><strong>Restart the MacBook:</strong> Sometimes a restart resolves the connection issue.</li>
+    <li><strong>Disconnect and reconnect:</strong> Unplug the USB-C cable from the MacBook, wait 5 seconds, and reconnect it.</li>
+</ol>
+
+<h3>If light is OFF:</h3>
+<p><strong>Problem:</strong> The docking station is not powered on.</p>
+<ol>
+    <li><strong>Check power adapter:</strong> Make sure the dock's power adapter is plugged into the wall outlet and into the dock.</li>
+    <li><strong>Check power outlet:</strong> Test the outlet by plugging in something else, or try a different outlet.</li>
+    <li><strong>Check power connection to dock:</strong> Ensure the power cable is firmly seated in the dock.</li>
+</ol>
+
+<h3>Why This Matters:</h3>
+<p>The Anker 575 dock provides critical functions:</p>
+<ul>
+    <li><strong>Ethernet connection</strong> for internet (required for streaming)</li>
+    <li><strong>Stream Deck connection</strong> to MacBook</li>
+    <li><strong>LG monitor connection</strong> (extended display)</li>
+    <li><strong>HDMI routing</strong> to lobby/patio TVs via HDMI extender</li>
+</ul>
+
+<h3>Note:</h3>
+<p>The docking station should ALWAYS stay powered on, even during shutdown. Only the MacBook and other equipment gets turned off.</p>`
+            },
+            {
+                id: 14,
+                question: "HDMI switch on wrong input (lobby TV not showing correct content)",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>The HDMI Switch (iArk Premium UltraHD 3 Port) controls the lobby TV above the doors.</h3>
+
+<h3>Two Inputs in Use:</h3>
+<ul>
+    <li><strong>Input 1 (LVSRM):</strong> Livestream feed - should show DURING service</li>
+    <li><strong>Input 2 (SLIDES):</strong> Slides from Mac Mini - should show AFTER service</li>
+</ul>
+
+<h3>Before Service - Switch to Input 1:</h3>
+<ol>
+    <li><strong>Locate the HDMI switch:</strong> It's to the left of the LG monitor at the livestream workstation.</li>
+    <li><strong>Check the Input indicators:</strong> Look at which input number is lit up (1 or 2).</li>
+    <li><strong>Press "SWITCH" button:</strong> Press until Input 1 (LVSRM) is selected.</li>
+    <li><strong>Verify:</strong> The lobby TV should now show the livestream feed.</li>
+</ol>
+
+<h3>After Service - Switch to Input 2:</h3>
+<ol>
+    <li><strong>IMPORTANT:</strong> Do this BEFORE shutting down the MacBook and livestream equipment.</li>
+    <li><strong>Press "SWITCH" button:</strong> Press until Input 2 (SLIDES) is selected.</li>
+    <li><strong>Verify:</strong> The lobby TV should now show slides from the Mac Mini.</li>
+    <li><strong>Now proceed with shutdown:</strong> This allows the lobby to continue showing slides even after livestream equipment is off.</li>
+</ol>
+
+<h3>Troubleshooting:</h3>
+<ul>
+    <li><strong>Lobby TV blank after service:</strong> Check that HDMI switch is on Input 2 and Mac Mini is still running</li>
+    <li><strong>Can't tell which input is active:</strong> Press "SWITCH" and watch the lobby TV to see what changes</li>
+    <li><strong>Neither input showing anything:</strong> Check that the HDMI cables are connected, verify Mac Mini and/or MacBook are powered on</li>
+</ul>
+
+<h3>Note:</h3>
+<p>This HDMI switch only controls the lobby TV above the doors. The Connect Center TV and outside/patio TVs are on separate feeds.</p>`
+            },
+            {
+                id: 15,
+                question: "Stream Deck not controlling ATEM",
+                category: "Stream Deck",
+                pinned: true,
+                answer: `<h3>Likely Causes:</h3>
+<ul>
+    <li>Stream Deck disconnected from Anker 575 dock</li>
+    <li>Companion software not running</li>
+    <li>Companion not connected to ATEM</li>
+    <li>Wrong Stream Deck profile loaded</li>
+    <li>Docking station not connected properly (green light instead of blue)</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check physical connection:</strong> Verify the Stream Deck (Elgato Model 20GBA9901) USB cable is plugged into the Anker 575 dock and the dock is connected to the MacBook Pro.</li>
+    <li><strong>Check Stream Deck power:</strong> The Stream Deck should be lit up with buttons visible. If it's dark, check the USB connection and docking station.</li>
+    <li><strong>Check docking station:</strong> The Anker 575 dock light should be BLUE (not green or off). If green, the MacBook connection needs troubleshooting.</li>
+    <li><strong>Launch Companion:</strong> On the MacBook Pro, open Companion from the dock. Launching doesn't show a window, but it runs in the background and should light up the Stream Deck buttons.</li>
+    <li><strong>Check Companion connection:</strong> Open a browser and go to http://localhost:8000. Look for the ATEM connection status. It should show "Connected" or "OK" in green.</li>
+    <li><strong>Reconnect ATEM in Companion:</strong> If the ATEM shows as disconnected, click on the ATEM connection, verify the IP address is correct (usually 192.168.x.x), and click "Reconnect" or "Enable."</li>
+    <li><strong>Restart Companion:</strong> Quit Companion (Cmd+Q) and reopen it from Applications.</li>
+    <li><strong>Test buttons:</strong> Press a camera cut button (Cam 1, 2, 3, or 4) on Stream Deck Page 1 and watch the ATEM multiview on the Dell monitor to see if it switches.</li>
+</ol>
+
+<h3>Quick Test:</h3>
+<p>If Companion is running, the Stream Deck should display buttons. If Stream Deck is dark, either it's not connected or Companion isn't running.</p>`
+            },
+            {
+                id: 16,
+                question: "Stream Deck Button Guide (All Pages)",
+                category: "Stream Deck",
+                pinned: false,
+                answer: `<h3>Page 1 Layout (3x5 buttons):</h3>
+<ul>
+    <li><strong>Up:</strong> Go to next page</li>
+    <li><strong>Cam 1, Cam 2, Cam 3, Cam 4:</strong> Switch between camera inputs (loads into Preview)</li>
+    <li><strong>Cut:</strong> Instant cut from Preview to Program (goes live)</li>
+    <li><strong>Fade:</strong> Smooth fade transition from Preview to Program</li>
+    <li><strong>Macro on Air:</strong> Puts the selected macro live on Program (on air)</li>
+    <li><strong>Lyrics:</strong> Loads lyrics overlay macro into Preview (not live yet)</li>
+    <li><strong>Top Right PiP:</strong> Picture-in-picture mode (slides in top right corner)</li>
+    <li><strong>FTB (Fade to Black):</strong> Fades entire output to black. Press again to unfade.</li>
+    <li><strong>Macro Preview:</strong> Shows preview of whatever macro is being played (loads into Preview)</li>
+    <li><strong>Connect 2.0:</strong> Preferred end-of-service "Connect" slide (better version, fades to Program)</li>
+    <li><strong>Connect Page:</strong> Original "Connect" slide (still usable but prefer 2.0)</li>
+</ul>
+
+<h3>Page 2 - Lower Thirds (Name Graphics):</h3>
+<ul>
+    <li><strong>Up/Down:</strong> Navigate between pages</li>
+    <li><strong>Name buttons:</strong> Jason Frei, Jay Lopez, Jasmin Lopez, Jodi Tilley, Don Winslow, JP Meyer, Percy Mitchel, Noah Mack, Kissy Black, Adsser Abude</li>
+    <li><strong>On/Off Air:</strong> Turns OFF the currently displayed lower third. (Click the name button again to turn it off, or use this button)</li>
+    <li><strong>Connect Page:</strong> Calvary Connect slide</li>
+</ul>
+
+<h3>Page 3 - Recording & Stream Controls:</h3>
+<ul>
+    <li><strong>Up/Down:</strong> Navigate between pages</li>
+    <li><strong>Disk Record Off/On:</strong> Controls ATEM's internal recording to external storage</li>
+    <li><strong>Stream Off/On:</strong> Controls ATEM streaming output (ON AIR)</li>
+    <li><strong>Input 1 Off/On:</strong> Toggles ATEM Input 1 (Camera 1)</li>
+    <li><strong>Sound Setup:</strong> Automatically turns off Equalizer, Compressor, and Limiter (should all be OFF)</li>
+    <li><strong>- (Decrease) / + (Increase):</strong> Volume controls for MIC1</li>
+</ul>
+
+<h3>Usage Tips:</h3>
+<ul>
+    <li>Select a macro (like "Lyrics") first, then press "Macro on Air" to put it live</li>
+    <li>Use "Macro Preview" to see what a macro looks like before going live</li>
+    <li>To remove a lower third, click the person's name button again OR use "On/Off Air"</li>
+    <li>Always use "Connect 2.0" for end-of-service (it's the updated version)</li>
+    <li>Press "Sound Setup" on Page 3 during every setup to ensure audio processing is off</li>
+</ul>`
+            },
+            {
+                id: 17,
+                question: "How to use Picture in Picture (PiP)",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>What is PiP?</h3>
+<p>Picture in Picture displays the Mac Mini slides feed (Camera 3) as a small window overlaid on top of another camera view, typically in the top right corner.</p>
+
+<h3>Quick Method - Using Stream Deck:</h3>
+<ol>
+    <li><strong>Go to Stream Deck Page 1</strong></li>
+    <li><strong>Press "Top Right PiP" button:</strong> This loads the PiP effect into Preview (green border on Dell monitor)</li>
+    <li><strong>Press "Cut" or "Fade":</strong> This moves the PiP from Preview to Program (live to audiences)</li>
+    <li><strong>To remove PiP:</strong> Select a different camera input (Cam 1, 2, 3, or 4) and press Cut or Fade</li>
+</ol>
+
+<h3>Manual Method - Using ATEM Software:</h3>
+<ol>
+    <li><strong>Open ATEM Software Control</strong> on the MacBook</li>
+    <li><strong>Switch to Switcher page</strong> at the bottom</li>
+    <li><strong>Open Macros:</strong> Menu → Macros → Macros (or press Shift+CMD+M)</li>
+    <li><strong>Go to Run page</strong> in the Macro window</li>
+    <li><strong>Choose "PIP R L"</strong> and press the Play symbol</li>
+    <li><strong>Check Preview:</strong> The Dell monitor Preview pane should show Camera 3 (slides) as a small window in the top right</li>
+    <li><strong>Go live:</strong> On the ATEM switcher, press either CUT or AUTO to move Preview to Program</li>
+</ol>
+
+<h3>Common Use Cases:</h3>
+<ul>
+    <li>Showing sermon slides while keeping the speaker visible</li>
+    <li>Displaying announcements while showing the worship team</li>
+    <li>Any time you want to combine camera video with slide content</li>
+</ul>
+
+<h3>Troubleshooting:</h3>
+<ul>
+    <li><strong>PiP showing wrong content:</strong> Check that Camera 3 (Mac Mini slides) is displaying the correct content</li>
+    <li><strong>PiP not appearing:</strong> Make sure you pressed Cut or Fade to move it from Preview to Program</li>
+    <li><strong>Can't remove PiP:</strong> Select any camera button (Cam 1-4) and press Cut</li>
+</ul>`
+            },
+            {
+                id: 18,
+                question: "Lyrics overlay not working at bottom of screen",
+                category: "Software",
+                pinned: false,
+                answer: `<h3>CRITICAL: Launch Order Matters!</h3>
+<p>On the Mac Mini (slides computer), <strong>ProPresenter MUST be launched BEFORE DisplayLink</strong> for lyrics overlay (Camera 4) to work properly.</p>
+
+<h3>The Problem:</h3>
+<ul>
+    <li>Camera 4 shows Mac desktop background instead of ProPresenter lyrics</li>
+    <li>Lyrics overlay macro doesn't display lyrics at bottom of video</li>
+    <li>Camera 4 shows "No Signal"</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Go to the Mac Mini</strong> (slides computer)</li>
+    <li><strong>Quit both programs:</strong>
+        <ul>
+            <li>Quit ProPresenter (Cmd+Q)</li>
+            <li>Quit DisplayLink Manager (Cmd+Q)</li>
+        </ul>
+    </li>
+    <li><strong>Wait 5 seconds</strong></li>
+    <li><strong>Launch in correct order:</strong>
+        <ul>
+            <li><strong>FIRST:</strong> Launch ProPresenter</li>
+            <li><strong>SECOND:</strong> Launch DisplayLink Manager</li>
+        </ul>
+    </li>
+    <li><strong>Check Camera 4:</strong> Look at the ATEM multiview on the Dell monitor. Camera 4 should now show ProPresenter output with lyrics.</li>
+    <li><strong>Test lyrics overlay:</strong> Use Stream Deck Page 1 → Press "Lyrics" button → Press "Macro on Air" to test</li>
+</ol>
+
+<h3>Using Lyrics Overlay with Stream Deck:</h3>
+<ol>
+    <li><strong>Page 1:</strong> Press "Lyrics" button (loads into Preview or Program depending on Macro Preview setting)</li>
+    <li><strong>Check Macro Preview button:</strong> Toggle whether lyrics appear on Preview or Program</li>
+    <li><strong>Press "Macro on Air":</strong> If set to Preview, this moves lyrics to Program (live)</li>
+</ol>
+
+<h3>Using Lyrics Overlay Manually:</h3>
+<ol>
+    <li>Open ATEM Software Control → Switcher page</li>
+    <li>Macros → Macros (or Shift+CMD+M)</li>
+    <li>Go to Run page</li>
+    <li>Choose "Worship" and press Play</li>
+    <li>Press Cut or Auto on switcher to go live</li>
+</ol>
+
+<h3>Prevention:</h3>
+<p>Always check Camera 4 during pre-service setup to ensure it's displaying ProPresenter output correctly before service starts.</p>`
+            },
+            {
+                id: 19,
+                question: "DisplayLink not showing ProPresenter output (Camera 4)",
+                category: "Software",
+                pinned: false,
+                answer: `<h3>Camera 4 is the DisplayLink feed from the Mac Mini. Two scenarios:</h3>
+
+<h3>Scenario 1: "No Signal" on Camera 4</h3>
+<p><strong>Cause:</strong> DisplayLink software is not running on the Mac Mini.</p>
+<ol>
+    <li>Go to the Mac mini (slides computer)</li>
+    <li>Open Applications and launch <strong>DisplayLink Manager</strong></li>
+    <li>Wait 10-15 seconds for the signal to appear on Camera 4 in the ATEM multiview</li>
+</ol>
+
+<h3>Scenario 2: Camera 4 shows Mac desktop background</h3>
+<p><strong>Cause:</strong> DisplayLink is running, but ProPresenter is not outputting correctly OR was launched after DisplayLink.</p>
+<ol>
+    <li>On the Mac mini, quit <strong>BOTH</strong> ProPresenter (Cmd+Q) and DisplayLink Manager (Cmd+Q)</li>
+    <li>Wait 5 seconds</li>
+    <li><strong>Launch ProPresenter FIRST</strong></li>
+    <li><strong>Then launch DisplayLink Manager SECOND</strong></li>
+    <li>Check that ProPresenter's screen configuration is set to output to the DisplayLink virtual display: Screens → Configure Screens</li>
+    <li>Camera 4 should now show the ProPresenter content</li>
+</ol>
+
+<h3>Expected Behavior:</h3>
+<ul>
+    <li>During worship: Camera 4 shows lyrics overlay (for bottom-of-screen lyrics)</li>
+    <li>After worship: Camera 4 shows main feed</li>
+    <li>Camera 4 should always mirror what's on the sanctuary TVs (via ProPresenter)</li>
+</ul>
+
+<h3>Critical Note:</h3>
+<p>ProPresenter MUST be launched BEFORE DisplayLink for Camera 4 to work. If you launch DisplayLink first, you must quit both and relaunch in the correct order.</p>`
+            },
+            {
+                id: 20,
+                question: "ATEM Mini Pro not detected in software",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>Likely Causes:</h3>
+<ul>
+    <li>ATEM Mini Pro not powered on</li>
+    <li>USB connection issue</li>
+    <li>Network connection issue (if using Ethernet control)</li>
+    <li>ATEM Control software needs restart</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check power:</strong> Make sure the ATEM Mini Pro power cable is plugged in and screwed into the back right of the unit. The ATEM has no power button - it turns on when plugged in. Check for indicator lights on the front.</li>
+    <li><strong>Check multiview:</strong> The Dell curved monitor should be showing all camera inputs if the ATEM is powered and working. If the multiview is blank, the ATEM isn't powered properly.</li>
+    <li><strong>Check USB connection:</strong> If controlling via USB, ensure the USB cable is connected from the ATEM to the MacBook Pro (likely through the Anker 575 dock).</li>
+    <li><strong>Check Ethernet connection:</strong> If controlling via network, verify the Ethernet cable is connected to the ATEM and the Anker dock (dock light should be BLUE).</li>
+    <li><strong>Restart ATEM Control software:</strong> Quit the ATEM Software Control (Cmd+Q) and reopen it. Wait 10 seconds for it to detect the ATEM.</li>
+    <li><strong>Power cycle the ATEM:</strong> If still not detected, unscrew and unplug the ATEM's power cable, wait 10 seconds, and plug it back in. Then restart ATEM Software Control.</li>
+    <li><strong>Check connection method:</strong> In ATEM Software Control, check if you're set to connect via USB or Network. Try switching methods if one isn't working.</li>
+</ol>
+
+<h3>Remember:</h3>
+<p>ATEM should always be turned on FIRST during startup (before cameras and MacBook) and turned off LAST during shutdown.</p>`
+            },
+            {
+                id: 21,
+                question: "Multiview screen not showing all cameras",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>Camera Setup Reminder:</h3>
+<ul>
+    <li><strong>Camera 1:</strong> Blackmagic Pocket Cinema Camera 4K (upstairs in A/V area)</li>
+    <li><strong>Camera 2:</strong> Blackmagic Pocket Cinema Camera 4K (near livestream workstation)</li>
+    <li><strong>Camera 3:</strong> Mac Mini slides feed (ProPresenter main output to sanctuary TVs)</li>
+    <li><strong>Camera 4:</strong> DisplayLink overlay from Mac Mini (lyrics/lower thirds)</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check which cameras are missing:</strong> Look at the multiview monitor (Dell curved display) and identify which camera inputs show "No Signal."</li>
+    <li><strong>Camera 1 & 2 (Blackmagic cameras):</strong>
+        <ul>
+            <li>Verify both cameras have their power strips plugged in and switched on</li>
+            <li>Check that sliding power switch on cameras is in ON position</li>
+            <li>These cameras run on constant power via power strips</li>
+            <li>Check HDMI cables are firmly connected to ATEM</li>
+        </ul>
+    </li>
+    <li><strong>Camera 3 (Mac Mini slides):</strong>
+        <ul>
+            <li>Should always match what's on the sanctuary TVs</li>
+            <li>If blank, check that Mac Mini is powered on</li>
+            <li>Verify ProPresenter is running on Mac Mini</li>
+            <li>Check HDMI connection from Mac Mini to ATEM</li>
+        </ul>
+    </li>
+    <li><strong>Camera 4 (DisplayLink overlay):</strong>
+        <ul>
+            <li>If shows "No Signal": Launch DisplayLink Manager on Mac Mini</li>
+            <li>If shows Mac desktop: Quit both ProPresenter and DisplayLink, then relaunch ProPresenter FIRST, DisplayLink SECOND</li>
+        </ul>
+    </li>
+    <li><strong>Power cycle cameras if needed:</strong> If a Blackmagic camera isn't showing up, try unplugging its power for 10 seconds and reconnecting.</li>
+</ol>
+
+<h3>Multiview Layout Check:</h3>
+<p>The curved Dell monitor should show all 4 ATEM inputs, Program output, Preview, audio meters, and livestream status. If the multiview itself is completely blank, check that:</p>
+<ul>
+    <li>ATEM is powered on</li>
+    <li>Dell monitor is powered on</li>
+    <li>Multiview HDMI output is connected from ATEM to monitor</li>
+    <li>M/V button is pressed on the ATEM switcher (not showing a single camera fullscreen)</li>
+</ul>`
+            },
+            {
+                id: 22,
+                question: "HDMI extender glitch — how to reset",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>Symptoms:</h3>
+<ul>
+    <li>Lobby TV shows no signal</li>
+    <li>Patio TV shows no signal</li>
+    <li>Extended display monitor in A/V area flickering or blank</li>
+</ul>
+
+<h3>What This Device Does:</h3>
+<p>The <strong>HDMI Extender Splitter 1x4 HD 4K @60Hz Over CAT5/CAT6/CAT7</strong> splits the MacBook Pro's output to multiple displays:</p>
+<ul>
+    <li>Extended display monitor (in A/V area, runs QuickTime to show ATEM Program output)</li>
+    <li>Lobby TV downstairs</li>
+    <li>Patio TV outside</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Locate the HDMI extender:</strong> It's connected to the MacBook Pro via USB-C to HDMI adapter from the MacBook's second USB-C port.</li>
+    <li><strong>Power cycle the extender:</strong> Unplug the power adapter from the HDMI extender unit.</li>
+    <li><strong>Wait 10 seconds:</strong> Let the device fully power down.</li>
+    <li><strong>Plug it back in:</strong> Reconnect the power adapter.</li>
+    <li><strong>Wait for signal:</strong> It may take 30-60 seconds for all displays to reconnect and show the proper signal.</li>
+    <li><strong>Check all outputs:</strong> Verify the extended display monitor, lobby TV, and patio TV are all showing the correct feed.</li>
+</ol>
+
+<h3>Prevention:</h3>
+<p>This extender occasionally glitches. If it happens frequently, consider adding it to the pre-service checklist to verify all displays are working before people arrive.</p>
+
+<h3>Note:</h3>
+<p>The HDMI extender is separate from the HDMI switch. The HDMI switch (next to LG monitor) only controls the lobby TV above the doors.</p>`
+            },
+            {
+                id: 23,
+                question: "Companion not responding",
+                category: "Stream Deck",
+                pinned: false,
+                answer: `<h3>What Companion Does:</h3>
+<p>Companion is the software that links the Stream Deck to the ATEM switcher. Without Companion running, the Stream Deck buttons will do nothing.</p>
+
+<h3>Likely Causes:</h3>
+<ul>
+    <li>Companion software crashed or not running</li>
+    <li>MacBook Pro performance issues</li>
+    <li>Companion lost connection to ATEM</li>
+</ul>
+
+<h3>Step-by-Step Solution:</h3>
+<ol>
+    <li><strong>Check if Companion is running:</strong> Look for the Companion icon in the MacBook's menu bar or dock. If it's not visible, it may have crashed.</li>
+    <li><strong>Launch Companion:</strong> Open Companion from the dock. Note: Launching doesn't show a window - it runs in the background and should initialize the Stream Deck (buttons light up).</li>
+    <li><strong>Check Stream Deck:</strong> If Companion is running properly, the Stream Deck should be lit up with buttons visible. If Stream Deck is dark, Companion isn't working.</li>
+    <li><strong>Access web interface:</strong> Open a browser and go to <strong>http://localhost:8000</strong> to access the Companion control panel. If the page loads, Companion is running.</li>
+    <li><strong>Check ATEM connection:</strong> In the Companion web interface, look for the ATEM connection status. If it shows "Disconnected" or "Error," click on it and verify the IP address is correct (usually 192.168.x.x).</li>
+    <li><strong>Reconnect ATEM:</strong> Click "Enable" or "Reconnect" on the ATEM connection in Companion.</li>
+    <li><strong>Restart Companion:</strong> If still not working, quit Companion (Cmd+Q) and reopen it from Applications.</li>
+    <li><strong>Test Stream Deck:</strong> Press any button on the Stream Deck (like Cam 1 or Cam 2) and watch the ATEM multiview on the Dell monitor to see if it responds.</li>
+    <li><strong>Restart MacBook if needed:</strong> If Companion continues to be unresponsive, a full restart of the MacBook may be necessary.</li>
+</ol>
+
+<h3>Quick Test:</h3>
+<p>Try opening http://localhost:8000 in a browser. If you see the Companion interface, it's running. If the page doesn't load, Companion isn't running.</p>`
+            },
+            {
+                id: 24,
+                question: "Pre-Service Testing Checklist",
+                category: "Setup/Shutdown",
+                pinned: false,
+                answer: `<h3>Complete this checklist 15-20 minutes before service:</h3>
+
+<h3>1. Visual Checks:</h3>
+<ul>
+    <li>✅ Dell curved monitor showing ATEM multiview with all 4 cameras</li>
+    <li>✅ Camera 1 & 2 (Blackmagic Pocket Cinema 4K) showing live video</li>
+    <li>✅ Camera 3 showing Mac Mini slides (should match sanctuary TVs)</li>
+    <li>✅ Camera 4 showing DisplayLink feed with ProPresenter output</li>
+    <li>✅ LG monitor powered on and displaying QuickTime fullscreen</li>
+    <li>✅ Anker 575 docking station showing faint BLUE light</li>
+    <li>✅ Stream Deck lit up with all buttons visible</li>
+    <li>✅ Lobby TV, patio TV showing correct feed (test HDMI extender)</li>
+</ul>
+
+<h3>2. Software Checks:</h3>
+<ul>
+    <li>✅ ATEM Software Control open and connected to switcher</li>
+    <li>✅ Chrome open with Restream website</li>
+    <li>✅ Companion running (Stream Deck buttons working)</li>
+    <li>✅ QuickTime Player showing New Movie Recording fullscreen on LG monitor</li>
+    <li>✅ On Mac Mini: ProPresenter launched BEFORE DisplayLink</li>
+</ul>
+
+<h3>3. Camera Brightness Adjustment:</h3>
+<ol>
+    <li>Switch ATEM to Camera 2 (small 2 button)</li>
+    <li>Open ATEM Software Control → Camera page</li>
+    <li>Set Gain to +14dB, Aperture to top-center</li>
+    <li>Adjust until picture looks good</li>
+    <li>Repeat for Camera 1</li>
+    <li>Switch back to Multiview (M/V button)</li>
+</ol>
+
+<h3>4. Audio Check:</h3>
+<ul>
+    <li>✅ MIC1 button ON (lit red) on ATEM switcher</li>
+    <li>✅ Audio meters on Dell monitor showing levels just above -10dB during speech</li>
+    <li>✅ Stream Deck Page 3 → Press "Sound Setup" to turn off Equalizer/Compressor/Limiter</li>
+    <li>✅ Use headset (behind Dell monitor) to test audio quality</li>
+</ul>
+
+<h3>5. Connection Tests:</h3>
+<ol>
+    <li><strong>Test Restream:</strong> In Restream, click "Connect to OBS, Zoom..."</li>
+    <li><strong>Test stream connection:</strong> Toggle all streams "ON" briefly to verify YouTube and Facebook connect properly</li>
+    <li><strong>Toggle OFF:</strong> Turn all streams "OFF" after testing</li>
+    <li><strong>Test ATEM output:</strong> Press ON AIR on ATEM switcher, verify "ON AIR" shows in red on Dell monitor with non-zero DATA RATE, then press OFF</li>
+    <li><strong>Test Stream Deck:</strong> Press Cam 1, Cam 2, etc. and watch multiview to ensure buttons work</li>
+    <li><strong>Test lower thirds:</strong> Go to Stream Deck Page 2 and test a name graphic, then turn it off</li>
+</ol>
+
+<h3>6. Final Verification:</h3>
+<ul>
+    <li>✅ HDMI switch set to Input 1 (LVSRM/livestream) for lobby TV above doors</li>
+    <li>✅ All equipment uncovered and lens caps removed from cameras</li>
+    <li>✅ Restream showing camera signal in preview window</li>
+</ul>
+
+<h3>When Service Starts (10-minute countdown):</h3>
+<ol>
+    <li>Ensure Program is displaying what viewers should see</li>
+    <li>In Restream, click "Toggle all ON" to go live</li>
+    <li>Press ON AIR on ATEM switcher</li>
+    <li>Verify "ON AIR" in red on Dell monitor</li>
+</ol>`
+            },
+            {
+                id: 25,
+                question: "Confidence monitor not showing lyrics for stage",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>What is the Confidence Monitor?</h3>
+<p>The confidence monitor is located on the far left of the stage (next to the stairwell when looking from the A/V area). It displays song lyrics to help worship leaders and singers on stage see the words.</p>
+
+<h3>Setup Instructions:</h3>
+<ol>
+    <li><strong>Locate the monitor:</strong> It's on the far left of the stage area, next to the stairwell.</li>
+    <li><strong>Check power strip:</strong> Make sure the power strip near the monitor is plugged in and switched on.</li>
+    <li><strong>Find the remote:</strong> The confidence monitor remote should be located next to the TV.</li>
+    <li><strong>Power on:</strong> Press the power button on the remote to turn on the monitor.</li>
+    <li><strong>Verify signal:</strong> The monitor should display the same ProPresenter output as the main sanctuary TVs, showing lyrics during worship.</li>
+</ol>
+
+<h3>When to Turn It On:</h3>
+<p>The confidence monitor should be turned on for any service or event that will display lyrics on the main sanctuary TVs, so that people on stage can see the lyrics too.</p>
+
+<h3>Troubleshooting:</h3>
+<ul>
+    <li><strong>Monitor won't turn on:</strong> Check that the power strip is on and the monitor is plugged in</li>
+    <li><strong>No signal on monitor:</strong> Check that ProPresenter is running on the Mac Mini and outputting to displays</li>
+    <li><strong>Showing wrong content:</strong> Verify it's receiving the correct video input (should match sanctuary TVs)</li>
+    <li><strong>Remote not working:</strong> Try getting closer to the TV, or check if remote needs new batteries</li>
+</ul>
+
+<h3>Note:</h3>
+<p>The confidence monitor is separate from the livestream system. It's part of the slides/presentation setup and feeds directly from ProPresenter on the Mac Mini.</p>`
+            },
+            {
+                id: 26,
+                question: "Recording to external drive not working",
+                category: "Video",
+                pinned: false,
+                answer: `<h3>ATEM Recording Feature:</h3>
+<p>The ATEM Mini Pro has the capability to record the livestream output directly to external storage media (USB hard drive or flash drive) while streaming.</p>
+
+<h3>Using Stream Deck to Control Recording:</h3>
+<ol>
+    <li><strong>Navigate to Stream Deck Page 3</strong> (press "Up" twice from Page 1)</li>
+    <li><strong>Connect external drive:</strong> Plug a USB hard drive or flash drive into the ATEM Mini Pro's USB port</li>
+    <li><strong>Start recording:</strong> Press "Disk Record On" button on Stream Deck</li>
+    <li><strong>Monitor recording:</strong> Check the Dell monitor's "Local Recording" pane (bottom right area) to verify recording is in progress</li>
+    <li><strong>Stop recording:</strong> Press "Disk Record Off" button on Stream Deck when done</li>
+</ol>
+
+<h3>Manual Control via ATEM:</h3>
+<ol>
+    <li>Connect USB drive to ATEM Mini Pro</li>
+    <li>Press the REC button on the ATEM switcher to start recording</li>
+    <li>Press REC again to stop recording</li>
+</ol>
+
+<h3>Troubleshooting:</h3>
+<ul>
+    <li><strong>Drive not recognized:</strong> Make sure the USB drive is formatted correctly (exFAT or FAT32 recommended for compatibility)</li>
+    <li><strong>Recording stops unexpectedly:</strong> Drive may be full or too slow. Use a high-speed USB 3.0 drive with plenty of free space</li>
+    <li><strong>Can't find recording:</strong> After stopping, safely eject the drive and connect it to a computer to access the video file</li>
+    <li><strong>Stream Deck buttons not working:</strong> Check that Companion is running and connected to ATEM</li>
+</ul>
+
+<h3>Best Practices:</h3>
+<ul>
+    <li>Use a dedicated high-speed USB drive with at least 32GB free space</li>
+    <li>Start recording at the beginning of service (after pressing ON AIR)</li>
+    <li>Verify recording started by checking the Local Recording pane on Dell monitor</li>
+    <li>Remember to safely eject the drive after stopping recording</li>
+</ul>`
+            },
+            {
+                id: 27,
+                question: "Equipment and Model Numbers Reference",
+                category: "Setup/Shutdown",
+                pinned: false,
+                answer: `<h3>Camera Equipment:</h3>
+<ul>
+    <li><strong>Camera 1 & 2:</strong> Blackmagic Design Pocket Cinema Camera 4K</li>
+    <li><strong>Serial (one camera):</strong> CINECAMPOCHDMFTAK</li>
+</ul>
+
+<h3>Monitors:</h3>
+<ul>
+    <li><strong>Dell Curved Monitor (Multiview):</strong> Dell Model 52721HGF, Service Tag: 9BFF4P3</li>
+    <li><strong>LG Monitor (Extended Display):</strong> LG 22MP56HQ-P.AUS, 21.5", Serial: 411NDTC19081</li>
+</ul>
+
+<h3>Computer:</h3>
+<ul>
+    <li><strong>MacBook Pro:</strong> Apple MacBook Pro 16-Inch "2019", Model A2141, Serial: C02CW38YMD6T</li>
+</ul>
+
+<h3>Switcher & Accessories:</h3>
+<ul>
+    <li><strong>ATEM Switcher:</strong> Blackmagicdesign ATEM Mini Pro, Serial: 6999256</li>
+    <li><strong>Stream Deck:</strong> Elgato Model 20GBA9901, Serial: A00SA40220NCTN (Division of CORSAIR MEMORY, Inc.)</li>
+    <li><strong>Docking Station:</strong> Anker PowerExpand 13-in-1 USB-C Dock (Model 575 / A8392)</li>
+</ul>
+
+<h3>Other Equipment:</h3>
+<ul>
+    <li><strong>HDMI Switch:</strong> iArk Premium UltraHD 3 Port HDMI Switch, Serial: 20180123190</li>
+    <li><strong>HDMI Extender:</strong> HDMI Extender Splitter 1x4 HD 4K @60Hz Over CAT5/CAT6/CAT7 Ethernet Cable</li>
+    <li><strong>Soundboard:</strong> Behringer X32</li>
+</ul>
+
+<h3>Audio Cable:</h3>
+<ul>
+    <li><strong>Audio Connection:</strong> Dual ¼″ to ⅛″ TRS cable (X32 to ATEM Mic 1)</li>
+</ul>
+
+<h3>Software:</h3>
+<ul>
+    <li>Companion (Stream Deck control)</li>
+    <li>ATEM Software Control</li>
+    <li>QuickTime Player (lobby/patio TV feed)</li>
+    <li>Restream.io (streaming to YouTube/Facebook via Chrome)</li>
+    <li>ProPresenter (Mac Mini - slides/lyrics)</li>
+    <li>DisplayLink Manager (Mac Mini - Camera 4 overlay)</li>
+</ul>
+
+<h3>Login Credentials:</h3>
+<ul>
+    <li><strong>MacBook Pro:</strong> Calvary Chapel San Mateo account, Password: "ccsm"</li>
+</ul>`
+            }
+        ];
+
+        // ========== INITIALIZE FUSE.JS (FUZZY SEARCH) ==========
+        const fuseOptions = {
+            keys: ['question', 'answer', 'category'],
+            threshold: 0.4,
+            includeScore: true,
+            ignoreLocation: true
+        };
+        const fuse = new Fuse(faqData, fuseOptions);
+
+        // ========== STATE ==========
+        let currentCategory = 'all';
+        let currentSearch = '';
+
+        // ========== DOM ELEMENTS ==========
+        const searchBar = document.getElementById('searchBar');
+        const faqList = document.getElementById('faqList');
+        const pinnedList = document.getElementById('pinnedList');
+        const noResults = document.getElementById('noResults');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const pinnedSection = document.getElementById('pinnedSection');
+        const allSection = document.getElementById('allSection');
+
+        // ========== RENDER FUNCTIONS ==========
+        function renderFAQ(faq, container, isSearch = false) {
+            const item = document.createElement('div');
+            item.className = `faq-item ${faq.pinned && !isSearch ? 'pinned' : ''}`;
+            item.innerHTML = `
+                <div class="faq-question">
+                    <span>${faq.question}</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <span class="faq-category">${faq.category}</span>
+                <div class="faq-preview">${getPreview(faq.answer)}</div>
+                <div class="faq-answer">${faq.answer}</div>
+            `;
+            
+            item.addEventListener('click', () => {
+                const answer = item.querySelector('.faq-answer');
+                const isExpanded = answer.classList.contains('expanded');
+                
+                document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('expanded'));
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('expanded'));
+                
+                if (!isExpanded) {
+                    answer.classList.add('expanded');
+                    item.classList.add('expanded');
+                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+            
+            container.appendChild(item);
+        }
+
+        function getPreview(html) {
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            const text = temp.textContent || temp.innerText;
+            return text.substring(0, 120).trim() + (text.length > 120 ? '...' : '');
+        }
+
+        function renderAllFAQs() {
+            faqList.innerHTML = '';
+            pinnedList.innerHTML = '';
+            
+            let filteredData = faqData;
+            
+            if (currentCategory !== 'all') {
+                filteredData = faqData.filter(faq => faq.category === currentCategory);
+            }
+            
+            if (currentSearch) {
+                const searchResults = fuse.search(currentSearch);
+                filteredData = searchResults.map(result => result.item);
+                
+                pinnedSection.style.display = 'none';
+                allSection.querySelector('.section-title').textContent = 'Search Results';
+                
+                if (filteredData.length === 0) {
+                    faqList.style.display = 'none';
+                    noResults.style.display = 'block';
+                    return;
+                } else {
+                    faqList.style.display = 'flex';
+                    noResults.style.display = 'none';
+                }
+                
+                filteredData.forEach(faq => renderFAQ(faq, faqList, true));
+            } else {
+                pinnedSection.style.display = 'block';
+                allSection.querySelector('.section-title').textContent = 'All Troubleshooting Guides';
+                faqList.style.display = 'flex';
+                noResults.style.display = 'none';
+                
+                const pinnedFAQs = filteredData.filter(faq => faq.pinned);
+                pinnedFAQs.forEach(faq => renderFAQ(faq, pinnedList));
+                
+                const regularFAQs = filteredData.filter(faq => !faq.pinned);
+                regularFAQs.forEach(faq => renderFAQ(faq, faqList));
+                
+                if (pinnedFAQs.length === 0) {
+                    pinnedSection.style.display = 'none';
+                }
+            }
+        }
+
+        // ========== EVENT LISTENERS ==========
+        searchBar.addEventListener('input', (e) => {
+            currentSearch = e.target.value.trim();
+            renderAllFAQs();
+        });
+
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                searchBar.value = '';
+                currentSearch = '';
+                renderAllFAQs();
+            });
+        });
+
+        // ========== INITIAL RENDER ==========
+        renderAllFAQs();
+    </script>
+</body>
+</html>
