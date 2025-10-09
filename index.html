@@ -363,7 +363,10 @@
             <h2 style="color: #1e3a8a; margin-bottom: 10px;">Report an Issue</h2>
             <p style="color: #666; margin-bottom: 25px;">Let us know about any problems or missing information</p>
             
-            <form id="contactForm" action="https://formspree.io/f/xovqbewo" method="POST">
+            <form id="contactForm" action="https://formspree.io/f/xqayyzrr" method="POST">
+                <input type="hidden" name="_subject" value="Calvary Livestream Issue Report">
+                <input type="hidden" name="_next" value="https://claude.ai/thanks">
+                
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Your Name (Optional)</label>
                     <input type="text" name="name" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="John Doe">
@@ -438,6 +441,11 @@
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(contactForm);
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
             
             try {
                 const response = await fetch(contactForm.action, {
@@ -455,11 +463,15 @@
                         contactForm.reset();
                         contactForm.style.display = 'block';
                         successMessage.style.display = 'none';
+                        submitButton.textContent = originalText;
+                        submitButton.disabled = false;
                     }, 3000);
                 } else {
-                    alert('There was a problem sending your report. Please try emailing 8bradymack@gmail.com directly.');
+                    throw new Error('Form submission failed');
                 }
             } catch (error) {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
                 alert('There was a problem sending your report. Please try emailing 8bradymack@gmail.com directly.');
             }
         });
@@ -551,6 +563,22 @@
             
             return Array.from(expanded).join(' ');
         }
+
+        // ========== FAQ DATA ==========
+        // TO ADD A NEW FAQ:
+        // 1. Copy an existing FAQ entry below
+        // 2. Change the id to the next number
+        // 3. Change question, category, keywords, and answer
+        // 4. Set pinned:true for Most Common Issues section, or pinned:false for regular
+        // 5. Save the file!
+        //
+        // Categories: "Setup/Shutdown", "Video", "Audio", "Networking", "Stream Deck", "Software"
+        //
+        // TO EDIT AN EXISTING FAQ:
+        // 1. Find the FAQ by its question text below
+        // 2. Edit the answer text (keep the HTML tags like <h3>, <ol>, <li>, <p>)
+        // 3. Add more keywords if needed (separated by spaces)
+        // 4. Save the file!
 
         const faqData = [
             {id:1,question:"Complete Startup Procedure",category:"Setup/Shutdown",pinned:true,keywords:"startup start begin setup turn on power on boot initialize getting started first steps how to start opening beginning preparation",answer:"<h3>Step-by-Step Startup:</h3><ol><li><strong>Turn on ATEM first</strong> - Press power button on front</li><li><strong>Turn on Cameras</strong> - Check both power strips ON</li><li><strong>Turn on MacBook</strong> - Open lid and log in</li><li><strong>Check Monitors</strong> - Dell and LG should auto-turn on</li><li><strong>Launch Companion</strong> - For Stream Deck control</li><li><strong>Setup QuickTime for TVs</strong> - New Movie Recording → Blackmagic Design → Drag to LG → Fullscreen</li><li><strong>Adjust Camera Brightness</strong> - Button 2 → ATEM Software → Camera → Gain +14dB → Adjust Aperture</li><li><strong>Check Audio</strong> - Press MIC1 ON (always muted after restart!) → Target -10dB</li></ol>"},
