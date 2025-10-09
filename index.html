@@ -5,316 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calvary Livestream Troubleshooting</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-            padding-bottom: 60px;
-        }
-
-        header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            color: white;
-            padding: 20px 20px 30px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            font-size: 1.8em;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .subtitle {
-            font-size: 0.95em;
-            opacity: 0.9;
-            margin-bottom: 20px;
-        }
-
-        .search-container {
-            max-width: 600px;
-            margin: -20px auto 0;
-            padding: 0 20px;
-            position: relative;
-            z-index: 10;
-        }
-
-        #searchBar {
-            width: 100%;
-            padding: 16px 50px 16px 20px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            outline: none;
-            transition: box-shadow 0.3s;
-        }
-
-        #searchBar:focus {
-            box-shadow: 0 6px 30px rgba(59,130,246,0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 35px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            font-size: 1.3em;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .categories {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-            justify-content: center;
-        }
-
-        .category-btn {
-            padding: 10px 20px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .category-btn:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
-            transform: translateY(-2px);
-        }
-
-        .category-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-
-        .faq-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .faq-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .faq-item:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
-            border-color: #3b82f6;
-        }
-
-        .faq-item.pinned {
-            border-left: 4px solid #f59e0b;
-        }
-
-        .faq-question {
-            font-size: 1.15em;
-            font-weight: 600;
-            color: #1e3a8a;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .faq-category {
-            display: inline-block;
-            padding: 4px 12px;
-            background: #e0f2fe;
-            color: #0369a1;
-            border-radius: 12px;
-            font-size: 0.75em;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        .faq-preview {
-            color: #666;
-            font-size: 0.95em;
-            margin-top: 8px;
-            line-height: 1.5;
-        }
-        
-        .faq-item.expanded .faq-preview {
-            display: none;
-        }
-
-        .faq-answer {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
-            color: #444;
-            line-height: 1.7;
-            display: none;
-        }
-
-        .faq-answer.expanded {
-            display: block;
-        }
-
-        .faq-answer h3 {
-            color: #1e3a8a;
-            font-size: 1.05em;
-            margin-top: 15px;
-            margin-bottom: 8px;
-        }
-
-        .faq-answer ul, .faq-answer ol {
-            margin-left: 20px;
-            margin-top: 8px;
-        }
-
-        .faq-answer li {
-            margin-bottom: 6px;
-        }
-
-        .faq-answer strong {
-            color: #1e3a8a;
-        }
-
-        .expand-icon {
-            color: #3b82f6;
-            font-size: 1.2em;
-            transition: transform 0.3s;
-        }
-
-        .faq-item.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-
-        .section-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #1e3a8a;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .pinned-section {
-            margin-bottom: 40px;
-        }
-
-        .pin-icon {
-            color: #f59e0b;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .no-results-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .no-results h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            color: #444;
-        }
-
-        footer {
-            text-align: center;
-            padding: 30px 20px;
-            color: #666;
-            font-size: 0.9em;
-            background: white;
-            margin-top: 50px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-
-        .report-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 30px;
-            background: #3b82f6;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .report-btn:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5em;
-            }
-
-            .subtitle {
-                font-size: 0.9em;
-            }
-
-            #searchBar {
-                font-size: 1em;
-                padding: 14px 45px 14px 16px;
-            }
-
-            .faq-question {
-                font-size: 1.05em;
-            }
-
-            .categories {
-                gap: 8px;
-            }
-
-            .category-btn {
-                padding: 8px 16px;
-                font-size: 0.9em;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; color: #333; line-height: 1.6; padding-bottom: 60px; }
+        header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 20px 20px 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.8em; margin-bottom: 5px; font-weight: 600; }
+        .subtitle { font-size: 0.95em; opacity: 0.9; margin-bottom: 20px; }
+        .search-container { max-width: 600px; margin: -20px auto 0; padding: 0 20px; position: relative; z-index: 10; }
+        #searchBar { width: 100%; padding: 16px 50px 16px 20px; font-size: 1.1em; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); outline: none; transition: box-shadow 0.3s; }
+        #searchBar:focus { box-shadow: 0 6px 30px rgba(59,130,246,0.3); }
+        .search-icon { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); color: #999; font-size: 1.3em; }
+        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .categories { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; justify-content: center; }
+        .category-btn { padding: 10px 20px; background: white; border: 2px solid #e5e7eb; border-radius: 25px; cursor: pointer; font-size: 0.95em; transition: all 0.3s; color: #666; font-weight: 500; }
+        .category-btn:hover { border-color: #3b82f6; color: #3b82f6; transform: translateY(-2px); }
+        .category-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .faq-list { display: flex; flex-direction: column; gap: 15px; }
+        .faq-item { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
+        .faq-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); border-color: #3b82f6; }
+        .faq-item.pinned { border-left: 4px solid #f59e0b; }
+        .faq-question { font-size: 1.15em; font-weight: 600; color: #1e3a8a; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .faq-category { display: inline-block; padding: 4px 12px; background: #e0f2fe; color: #0369a1; border-radius: 12px; font-size: 0.75em; font-weight: 600; margin-top: 8px; }
+        .faq-preview { color: #666; font-size: 0.95em; margin-top: 8px; line-height: 1.5; }
+        .faq-item.expanded .faq-preview { display: none; }
+        .faq-answer { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; color: #444; line-height: 1.7; display: none; }
+        .faq-answer.expanded { display: block; }
+        .faq-answer h3 { color: #1e3a8a; font-size: 1.05em; margin-top: 15px; margin-bottom: 8px; }
+        .faq-answer ul, .faq-answer ol { margin-left: 20px; margin-top: 8px; }
+        .faq-answer li { margin-bottom: 6px; }
+        .faq-answer strong { color: #1e3a8a; }
+        .expand-icon { color: #3b82f6; font-size: 1.2em; transition: transform 0.3s; }
+        .faq-item.expanded .expand-icon { transform: rotate(180deg); }
+        .section-title { font-size: 1.3em; font-weight: 600; color: #1e3a8a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .pinned-section { margin-bottom: 40px; }
+        .pin-icon { color: #f59e0b; }
+        .no-results { text-align: center; padding: 60px 20px; color: #666; display: none; }
+        .no-results-icon { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
+        .no-results h2 { font-size: 1.5em; margin-bottom: 10px; color: #444; }
+        footer { text-align: center; padding: 30px 20px; color: #666; font-size: 0.9em; background: white; margin-top: 50px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .report-btn { display: inline-block; margin-top: 15px; padding: 12px 30px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
+        .report-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
     </style>
 </head>
 <body>
     <header>
         <h1>🎥 Calvary Livestream Troubleshooting</h1>
         <p class="subtitle">Quick solutions for common livestream issues</p>
-        
         <div class="search-container">
-            <input 
-                type="text" 
-                id="searchBar" 
-                placeholder="Search for a problem... (e.g., 'camera too dark')"
-                autocomplete="off"
-            >
+            <input type="text" id="searchBar" placeholder="Search for a problem..." autocomplete="off">
             <span class="search-icon">🔍</span>
         </div>
     </header>
@@ -331,10 +68,7 @@
         </div>
 
         <div class="pinned-section" id="pinnedSection">
-            <h2 class="section-title">
-                <span class="pin-icon">📌</span>
-                Most Common Issues
-            </h2>
+            <h2 class="section-title"><span class="pin-icon">📌</span>Most Common Issues</h2>
             <div class="faq-list" id="pinnedList"></div>
         </div>
 
@@ -343,345 +77,140 @@
             <div class="faq-list" id="faqList"></div>
         </div>
 
-        <div class="no-results" id="noResults" style="display: none;">
+        <div class="no-results" id="noResults">
             <div class="no-results-icon">🔍</div>
             <h2>No matches found</h2>
-            <p>Try different keywords or browse all FAQs above</p>
+            <p>Try different keywords</p>
         </div>
     </div>
 
     <footer>
         <p><strong>Last Updated:</strong> October 2025</p>
         <p>Calvary San Mateo A/V Team</p>
-        <a href="#" id="reportBtn" class="report-btn">
-            📧 Report an Issue
-        </a>
+        <a href="#" id="reportBtn" class="report-btn">📧 Report an Issue</a>
     </footer>
 
-    <div id="contactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; overflow-y: auto;">
-        <div style="max-width: 600px; margin: 50px auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-            <h2 style="color: #1e3a8a; margin-bottom: 10px;">Report an Issue</h2>
-            <p style="color: #666; margin-bottom: 25px;">Let us know about any problems or missing information</p>
-            
+    <div id="contactModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;padding:20px;">
+        <div style="max-width:600px;margin:50px auto;background:white;border-radius:12px;padding:30px;">
+            <h2 style="color:#1e3a8a;margin-bottom:10px;">Report an Issue</h2>
             <form id="contactForm" action="https://formspree.io/f/xqayyzrr" method="POST">
-                <input type="hidden" name="_subject" value="Calvary Livestream Issue Report">
-                <input type="hidden" name="_next" value="https://claude.ai/thanks">
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Your Name (Optional)</label>
-                    <input type="text" name="name" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="John Doe">
+                <div style="margin-bottom:20px;">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;">Your Name (Optional)</label>
+                    <input type="text" name="name" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;">
                 </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Issue Category</label>
-                    <select name="category" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em; background: white;">
-                        <option value="">Select a category...</option>
-                        <option value="Setup/Shutdown">Setup/Shutdown</option>
-                        <option value="Video">Video</option>
-                        <option value="Audio">Audio</option>
-                        <option value="Networking">Networking</option>
-                        <option value="Stream Deck">Stream Deck</option>
-                        <option value="Software">Software</option>
-                        <option value="Other">Other</option>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;">Issue Category</label>
+                    <select name="category" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;background:white;">
+                        <option value="">Select...</option>
+                        <option>Setup/Shutdown</option>
+                        <option>Video</option>
+                        <option>Audio</option>
+                        <option>Networking</option>
+                        <option>Stream Deck</option>
+                        <option>Software</option>
+                        <option>Other</option>
                     </select>
                 </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Description <span style="color: #ef4444;">*</span></label>
-                    <textarea name="message" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em; min-height: 150px; font-family: inherit; resize: vertical;" placeholder="Please describe the issue or missing information..."></textarea>
+                <div style="margin-bottom:25px;">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;">Description *</label>
+                    <textarea name="message" required style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;min-height:150px;"></textarea>
                 </div>
-                
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" id="cancelBtn" style="padding: 12px 24px; background: #e5e7eb; color: #333; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer;">
-                        Cancel
-                    </button>
-                    <button type="submit" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer;">
-                        Send Report
-                    </button>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" id="cancelBtn" style="padding:12px 24px;background:#e5e7eb;border:none;border-radius:8px;cursor:pointer;">Cancel</button>
+                    <button type="submit" style="padding:12px 24px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">Send</button>
                 </div>
             </form>
-            
-            <div id="successMessage" style="display: none; margin-top: 20px; padding: 15px; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; color: #065f46;">
-                <strong>✓ Thank you!</strong> Your report has been sent successfully.
-            </div>
+            <div id="successMessage" style="display:none;margin-top:20px;padding:15px;background:#d1fae5;border-radius:8px;">✓ Sent!</div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
-
     <script>
-        const reportBtn = document.getElementById('reportBtn');
-        const contactModal = document.getElementById('contactModal');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const contactForm = document.getElementById('contactForm');
-        const successMessage = document.getElementById('successMessage');
+const faqData=[
+{id:1,question:"Complete Startup Procedure",category:"Setup/Shutdown",pinned:true,keywords:"startup start screw power cable",answer:"<h3>Step-by-Step:</h3><ol><li>Turn on ATEM first (screw in power cable)</li><li>Turn on Cameras (flip power strips ON on top of cameras)</li><li>Turn on MacBook (open lid and log in)</li><li>Check Monitors (If Dell and LG don't auto-turn on, click power buttons on bottom right)</li><li>Launch Companion</li><li>Setup QuickTime (New Movie Recording → Input: Blackmagic Design → Drag to LG → Fullscreen)</li><li>Adjust Camera Brightness (ATEM Software → Camera → Adjust Aperture → Gain +14dB)</li><li>Check Audio (Press MIC1 ON → Target: right between green and yellow)</li></ol>"},
+{id:2,question:"Complete Shutdown Procedure",category:"Setup/Shutdown",pinned:true,keywords:"shutdown black cloths",answer:"<h3>Step-by-Step:</h3><ol><li>Switch HDMI switch to Input 2 (press SWITCH button)</li><li>Shut down MacBook</li><li>Turn off cameras (both power strips OFF)</li><li>Turn off monitors (press power buttons on bottom right)</li><li>Unplug ATEM last (unscrew power cable)</li><li>Cover equipment (black cloths)</li></ol>"},
+{id:3,question:"Cameras look dark or dim",category:"Video",pinned:true,keywords:"dark dim brightness aperture gain",answer:"<h3>Fix Dark Cameras:</h3><ol><li>Open ATEM Software Control</li><li>Go to Camera page</li><li>Drag Aperture to top center</li><li>Set Gain to +14dB</li><li>Adjust until good</li></ol>"},
+{id:4,question:"No sound on livestream",category:"Audio",pinned:true,keywords:"no sound audio muted x32 matrix 3.5mm cable green yellow",answer:"<h3>Fix No Audio:</h3><ol><li>Check X32 Matrix NOT muted (ask audio engineer)</li><li>Press MIC1 ON on ATEM (always muted after restart!)</li><li>Check Dell monitor audio bars</li><li>Target: right between green and yellow</li></ol><h3>If still no audio:</h3><ul><li>Check volume arrows under MIC1</li><li>Check 3.5mm audio cable plugged into back left of ATEM</li></ul>"},
+{id:5,question:"Restream freezing or disconnecting",category:"Networking",pinned:true,keywords:"restream freezing glitch lag ethernet quicktime recording",answer:"<h3>Fix Restream Freezing:</h3><ol><li><strong>FIRST:</strong> Start recording the stream on QuickTime</li><li>Check internet</li><li>Verify Ethernet (BLUE light on dock)</li><li>Check Dell shows ON AIR + DATA RATE</li><li>Refresh Restream page</li><li>Try Safari instead of Chrome</li></ol><h3>If still freezing:</h3><ul><li>Check ATEM cache</li><li>Unplug and plug back in ethernet on back of ATEM</li></ul>"},
+{id:6,question:"ATEM cache filling up or FULL",category:"Networking",pinned:true,keywords:"cache full buffer ethernet quicktime recording sermon",answer:"<h3>⚠️ FIRST: Start recording stream on QuickTime</h3><h3>FIX 1 (Try First):</h3><ol><li>Unplug Ethernet from ATEM back</li><li>Plug back in</li><li>Press MIC1 ON</li></ol><h3>FIX 2 (If not during sermon):</h3><ol><li>Power cycle ATEM (stops video!)</li><li>Wait 5 seconds</li><li>Plug back in</li><li>Press MIC1 ON</li></ol>"},
+{id:7,question:"Stream Deck not working",category:"Stream Deck",pinned:true,keywords:"stream deck companion toggle atem",answer:"<h3>FIX 1: Restart Companion</h3><ol><li>Quit Companion</li><li>Reopen</li><li>Test buttons</li></ol><h3>FIX 2 (MOST COMMON):</h3><ol><li>Click Companion in menu bar</li><li>Launch GUI</li><li>Find ATEM connection</li><li>Toggle OFF then ON</li></ol><h3>FIX 3: Hardware</h3><ul><li>Check dock BLUE light</li><li>Check USB plugged in</li></ul><h3>BACKUP:</h3><p>Use ATEM Software → Macros</p>"},
+{id:9,question:"QuickTime not showing video to TVs",category:"Software",pinned:false,keywords:"quicktime tv blackmagic usb-c",answer:"<h3>Setup QuickTime:</h3><ol><li>Launch QuickTime</li><li>File → New Movie Recording</li><li>Click dropdown → Choose Blackmagic Design</li><li>Drag to LG monitor</li><li>Click green fullscreen button</li></ol><h3>Troubleshooting:</h3><ul><li>No Blackmagic? Check ATEM powered on and USB-C connected from ATEM to computer</li><li>TVs black? Check HDMI extender/TV inputs</li></ul>"},
+{id:12,question:"One TV has no signal (lobby OR patio)",category:"Video",pinned:false,keywords:"tv no signal hdmi input",answer:"<h3>Fix Single TV:</h3><ol><li>Check which HDMI port has cable (back of TV)</li><li>Press Input/Source on remote</li><li>Select matching HDMI (1, 2, or 3)</li><li>Wait a few seconds</li></ol><h3>If still no signal:</h3><ul><li>Check HDMI firmly plugged in</li><li>Power cycle HDMI extender</li></ul>"},
+{id:13,question:"BOTH TVs have no signal",category:"Video",pinned:false,keywords:"both tvs hdmi extender flip switch lg monitor",answer:"<h3>Fix Both TVs:</h3><ol><li>Check dock light is BLUE</li><li>Check MacBook + QuickTime fullscreen</li><li>Check USB-C to HDMI adapter (left side)</li><li>Power cycle HDMI extender</li></ol><h3>HDMI Extender Reset:</h3><p><strong>⚠️ Will cut video for LG monitor and all TVs!</strong></p><ol><li>Flip switch off</li><li>Flip switch back on</li></ol>"},
+{id:14,question:"Stream Deck completely off",category:"Stream Deck",pinned:false,keywords:"stream deck off dark anker dock power button",answer:"<h3>Fix Stream Deck:</h3><ol><li><strong>Check Anker dock light:</strong><ul><li>OFF = Click power button on front</li><li>GREEN = Fix USB-C from dock to MacBook Pro</li><li>BLUE = Good ✓</li></ul></li><li>If GREEN: Unplug/replug USB-C from MacBook</li><li>Check Stream Deck USB in dock</li><li>Launch Companion</li></ol><h3>Still dark?</h3><ul><li>Try different USB port</li><li>Restart Companion</li></ul>"},
+{id:15,question:"Monitor won't turn on automatically",category:"Video",pinned:false,keywords:"monitor auto turn on dell lg shutdown",answer:"<h3>Manual Power On:</h3><p><strong>Dell Curved:</strong> Bottom far right button</p><p><strong>LG Flat:</strong> Bottom right button</p><p><strong>Note:</strong> This is NORMAL - monitors don't auto-turn on if manually turned off during last shutdown</p>"},
+{id:16,question:"Docking station green or off",category:"Networking",pinned:false,keywords:"dock anker green off power button",answer:"<h3>If GREEN:</h3><ol><li>Unplug USB-C from MacBook</li><li>Wait 3 seconds</li><li>Replug firmly</li><li>Try other USB-C port</li><li>Should turn BLUE</li></ol><h3>If OFF:</h3><ol><li>Press power button on front of dock</li></ol><h3>Light meanings:</h3><ul><li>BLUE = Good</li><li>GREEN = Bad connection dock to MacBook Pro</li><li>OFF = Powered off or no power</li></ul>"},
+{id:19,question:"Lyrics overlay not working",category:"Software",pinned:false,keywords:"lyrics propresenter displaylink launch order camera 4",answer:"<h3>⚠️ Launch Order Matters!</h3><p><strong>DisplayLink MUST launch BEFORE ProPresenter!</strong></p><h3>Fix Lyrics:</h3><ol><li>Quit ProPresenter</li><li>Quit DisplayLink</li><li>Wait 5 seconds</li><li><strong>Launch DisplayLink FIRST</strong></li><li><strong>Launch ProPresenter SECOND</strong></li><li>Check Camera 4</li></ol><p><strong>Why?</strong> DisplayLink creates virtual display. If launched second, ProPresenter can't find it.</p>"},
+{id:20,question:"DisplayLink / Camera 4 issues",category:"Software",pinned:false,keywords:"displaylink camera 4 no signal desktop mac mini",answer:"<h3>If No Signal:</h3><ol><li>Launch DisplayLink Manager</li><li>Wait 10-15 seconds</li></ol><h3>If Shows Desktop:</h3><ol><li>Quit ProPresenter + DisplayLink</li><li>Launch DisplayLink FIRST</li><li>Launch ProPresenter SECOND</li></ol><h3>Still broken?</h3><ul><li>Check USB-C from Mac Mini</li><li>Restart both apps</li></ul>"},
+{id:21,question:"ATEM not detected on QuickTime and/or ATEM Control app",category:"Video",pinned:false,keywords:"atem not detected quicktime software control sermon power cycle",answer:"<h3>Fix ATEM Not Found:</h3><ol><li>Check power cable (back right, screwed in)</li><li>Restart ATEM Software Control and/or QuickTime (the one not detecting ATEM)</li><li>Check USB/network cables</li><li><strong>Power cycle ATEM ONLY IF NOT DURING SERMON:</strong><ul><li>Unplug power</li><li>Wait 10 seconds</li><li>Plug back in</li><li>Restart software</li></ul></li></ol>"},
+{id:24,question:"Restream not streaming to YouTube/Facebook",category:"Networking",pinned:false,keywords:"restream youtube facebook not streaming quicktime recording ethernet",answer:"<h3>⚠️ FIRST: Start recording in QuickTime</h3><h3>Fix Restream Not Live:</h3><ol><li>Quit Chrome</li><li>Open Safari</li><li>Go to Restream.io</li><li>Toggle YouTube/Facebook ON (green)</li><li>Check ATEM cache on Dell monitor</li></ol><h3>Still not streaming?</h3><ul><li>Check ON AIR button lit</li><li>Check Dell shows ON AIR</li><li>Check internet</li><li>Unplug ethernet on back of ATEM</li><li>Wait 5 seconds</li><li>Plug back in</li></ul>"},
+{id:25,question:"ON AIR pressed but not streaming",category:"Networking",pinned:false,keywords:"on air not streaming obs ethernet cache",answer:"<h3>Fix ON AIR Not Streaming:</h3><ol><li>Check ATEM ON AIR lit (red)</li><li>Check Dell shows ON AIR in red</li><li>Open Restream.io</li><li>Click Connect to OBS</li><li>Toggle all platforms ON</li></ol><h3>If still not streaming:</h3><ul><li>Press OFF then ON AIR</li><li>Check Ethernet in dock (blue light)</li><li>Refresh Restream page</li><li>Check ATEM cache</li><li>Unplug ethernet on back of ATEM</li><li>Wait 5 seconds</li><li>Plug back in</li></ul>"},
+{id:26,question:"Restream shows no camera signal",category:"Networking",pinned:false,keywords:"restream no signal black screen obs ethernet cache",answer:"<h3>Fix No Camera Signal:</h3><ol><li>Check ATEM ON AIR lit</li><li>Check Dell shows ON AIR</li><li>In Restream click Connect to OBS</li><li>Check Ethernet in dock (BLUE light)</li><li>Press OFF then ON AIR on ATEM</li></ol><h3>Still black?</h3><ul><li>Check which camera selected</li><li>Switch cameras and back</li><li>Check ATEM cache</li></ul>"}
+];
 
-        reportBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            contactModal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        });
+const searchSynonyms={audio:['sound','volume','mic','mute'],video:['picture','screen'],camera:['cam'],dark:['dim','brightness'],atem:['atm','switcher'],restream:['restram','streaming','stream'],glitching:['glitch','freezing','frozen','lagging'],broke:['broken','not working']};
 
-        cancelBtn.addEventListener('click', () => {
-            contactModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            contactForm.reset();
-            successMessage.style.display = 'none';
-        });
+function expandSearchQuery(q){let w=q.toLowerCase().split(' ').filter(x=>x.length>0);let e=new Set(w);w.forEach(word=>{if(searchSynonyms[word])searchSynonyms[word].forEach(s=>e.add(s));Object.keys(searchSynonyms).forEach(k=>{if(searchSynonyms[k].includes(word)){e.add(k);searchSynonyms[k].forEach(s=>e.add(s))}})});return Array.from(e).join(' ')}
 
-        contactModal.addEventListener('click', (e) => {
-            if (e.target === contactModal) {
-                contactModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-                contactForm.reset();
-                successMessage.style.display = 'none';
-            }
-        });
+const fuse=new Fuse(faqData,{keys:['question','answer','keywords'],threshold:0.3});
+let currentCategory='all',currentSearch='';
 
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(contactForm);
-            const submitButton = contactForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            
-            submitButton.textContent = 'Sending...';
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {'Accept': 'application/json'}
-                });
-                
-                if (response.ok) {
-                    contactForm.style.display = 'none';
-                    successMessage.style.display = 'block';
-                    setTimeout(() => {
-                        contactModal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                        contactForm.reset();
-                        contactForm.style.display = 'block';
-                        successMessage.style.display = 'none';
-                        submitButton.textContent = originalText;
-                        submitButton.disabled = false;
-                    }, 3000);
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            } catch (error) {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-                alert('There was a problem sending your report. Please try emailing 8bradymack@gmail.com directly.');
-            }
-        });
+function renderFAQ(faq,container){
+const item=document.createElement('div');
+item.className=`faq-item ${faq.pinned?'pinned':''}`;
+const preview=faq.answer.replace(/<[^>]*>/g,'').substring(0,120)+'...';
+item.innerHTML=`<div class="faq-question"><span>${faq.question}</span><span class="expand-icon">▼</span></div><span class="faq-category">${faq.category}</span><div class="faq-preview">${preview}</div><div class="faq-answer">${faq.answer}</div>`;
+item.onclick=()=>{
+const isExpanded=item.classList.contains('expanded');
+document.querySelectorAll('.faq-answer').forEach(a=>a.classList.remove('expanded'));
+document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('expanded'));
+if(!isExpanded){
+item.classList.add('expanded');
+item.querySelector('.faq-answer').classList.add('expanded');
+}};
+container.appendChild(item);
+}
 
-        const searchSynonyms = {
-            'audio': ['sound', 'volume', 'mic', 'microphone', 'hear', 'hearing', 'listen', 'mute', 'muted', 'unmute'],
-            'quiet': ['low', 'soft', 'cant hear', 'too low', 'silent', 'no audio', 'no sound'],
-            'loud': ['too loud', 'high', 'too high', 'distorted', 'distortion'],
-            'matrix': ['x32', 'soundboard', 'mixer', 'sound board'],
-            'video': ['picture', 'screen', 'display', 'visual', 'image'],
-            'camera': ['cam', 'cameras', 'camra', 'cams'],
-            'monitor': ['screen', 'display', 'tv', 'television'],
-            'dark': ['dim', 'too dark', 'black', 'brightness', 'bright'],
-            'blurry': ['blur', 'fuzzy', 'out of focus', 'focus', 'unfocused'],
-            'blank': ['black', 'no signal', 'nothing', 'empty'],
-            'atem': ['atm', 'switcher', 'blackmagic', 'black magic'],
-            'restream': ['restram', 're-stream', 'streaming', 'stream', 'restreamio', 'restream.io'],
-            'companion': ['compainion', 'companon', 'companoin'],
-            'propresenter': ['pro presenter', 'slides', 'presentations', 'presenter', 'pro-presenter'],
-            'displaylink': ['display link', 'display-link'],
-            'quicktime': ['quick time', 'qt'],
-            'streamdeck': ['stream deck', 'stream-deck', 'elgato', 'deck'],
-            'ethernet': ['internet', 'network', 'connection', 'cable', 'lan'],
-            'dock': ['docking station', 'anker', 'hub', 'anker575', 'anker 575'],
-            'hdmi': ['video cable', 'cable'],
-            'usbc': ['usb-c', 'usb c', 'thunderbolt'],
-            'lobby': ['loby', 'entrance', 'front'],
-            'patio': ['outside', 'outdoor', 'exterior'],
-            'frozen': ['freeze', 'freezing', 'stuck', 'hanging', 'not responding', 'unresponsive', 'locked up'],
-            'glitching': ['glitch', 'glitchy', 'buggy', 'error', 'issue', 'problem', 'freezing', 'frozen', 'lagging', 'stuttering'],
-            'broke': ['broken', 'not working', 'doesnt work', 'wont work', 'stopped', 'dead', 'failed', 'failing'],
-            'lag': ['lagging', 'laggy', 'slow', 'delay', 'delayed', 'stuttering', 'freezing', 'frozen'],
-            'disconnect': ['disconnected', 'disconnecting', 'lost connection', 'connection lost', 'dropped', 'dropping'],
-            'cache': ['cashe', 'buffer', 'buffering', 'full'],
-            'turn on': ['power on', 'start', 'boot', 'startup', 'starting'],
-            'turn off': ['power off', 'shutdown', 'shut down', 'stop', 'stopping'],
-            'restart': ['reboot', 'reset', 'power cycle', 'cycle'],
-            'fix': ['repair', 'solve', 'troubleshoot', 'resolve'],
-            'setup': ['set up', 'start up', 'starting', 'begin', 'initialize'],
-            'shutdown': ['shut down', 'closing', 'ending', 'stop'],
-            'youtube': ['yt', 'you tube'],
-            'facebook': ['fb', 'face book'],
-            'live': ['streaming', 'broadcast', 'broadcasting', 'on air', 'onair'],
-            'macbook': ['mac book', 'laptop', 'computer'],
-            'dell': ['monitor', 'curved monitor'],
-            'lg': ['monitor', 'flat monitor']
-        };
+function renderAll(){
+document.getElementById('pinnedList').innerHTML='';
+document.getElementById('faqList').innerHTML='';
+let filtered=faqData;
+if(currentCategory!=='all')filtered=faqData.filter(f=>f.category===currentCategory);
+if(currentSearch){
+const results=fuse.search(expandSearchQuery(currentSearch));
+filtered=results.map(r=>r.item);
+document.getElementById('pinnedSection').style.display='none';
+if(filtered.length===0){document.getElementById('noResults').style.display='block';document.getElementById('faqList').style.display='none';return;}
+else{document.getElementById('noResults').style.display='none';document.getElementById('faqList').style.display='flex';}
+filtered.forEach(f=>renderFAQ(f,document.getElementById('faqList')));
+}else{
+document.getElementById('pinnedSection').style.display='block';
+document.getElementById('noResults').style.display='none';
+document.getElementById('faqList').style.display='flex';
+const pinned=filtered.filter(f=>f.pinned);
+pinned.forEach(f=>renderFAQ(f,document.getElementById('pinnedList')));
+filtered.filter(f=>!f.pinned).forEach(f=>renderFAQ(f,document.getElementById('faqList')));
+}}
 
-        const phraseMappings = {
-            'wont turn on': 'not turning on power',
-            'cant hear': 'no audio sound',
-            'no picture': 'no video signal',
-            'not working': 'broken not responding',
-            'stopped working': 'broke not responding',
-            'how do i': '',
-            'how to': '',
-            'why is': '',
-            'what to do': '',
-            'help with': '',
-            'problem with': ''
-        };
+document.getElementById('searchBar').oninput=e=>{currentSearch=e.target.value.trim();renderAll()};
+document.querySelectorAll('.category-btn').forEach(btn=>btn.onclick=()=>{
+document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+currentCategory=btn.dataset.category;
+document.getElementById('searchBar').value='';
+currentSearch='';
+renderAll();
+});
 
-        function expandSearchQuery(query) {
-            let processedQuery = query.toLowerCase();
-            
-            Object.keys(phraseMappings).forEach(phrase => {
-                if (processedQuery.includes(phrase)) {
-                    processedQuery = processedQuery.replace(phrase, phraseMappings[phrase]);
-                }
-            });
-            
-            const words = processedQuery.split(' ').filter(w => w.length > 0);
-            const expanded = new Set();
-            
-            words.forEach(word => expanded.add(word));
-            
-            words.forEach(word => {
-                if (searchSynonyms[word]) {
-                    searchSynonyms[word].forEach(syn => expanded.add(syn));
-                }
-                
-                Object.keys(searchSynonyms).forEach(key => {
-                    if (searchSynonyms[key].includes(word)) {
-                        expanded.add(key);
-                        searchSynonyms[key].forEach(syn => expanded.add(syn));
-                    }
-                });
-            });
-            
-            return Array.from(expanded).join(' ');
-        }
+document.getElementById('reportBtn').onclick=e=>{e.preventDefault();document.getElementById('contactModal').style.display='block'};
+document.getElementById('cancelBtn').onclick=()=>document.getElementById('contactModal').style.display='none';
+document.getElementById('contactForm').onsubmit=async e=>{
+e.preventDefault();
+const res=await fetch(e.target.action,{method:'POST',body:new FormData(e.target),headers:{'Accept':'application/json'}});
+if(res.ok){document.getElementById('contactForm').style.display='none';document.getElementById('successMessage').style.display='block';setTimeout(()=>document.getElementById('contactModal').style.display='none',3000)}
+};
 
-        // ========== FAQ DATA ==========
-        // TO ADD A NEW FAQ:
-        // 1. Copy an existing FAQ entry below
-        // 2. Change the id to the next number
-        // 3. Change question, category, keywords, and answer
-        // 4. Set pinned:true for Most Common Issues section, or pinned:false for regular
-        // 5. Save the file!
-        //
-        // Categories: "Setup/Shutdown", "Video", "Audio", "Networking", "Stream Deck", "Software"
-        //
-        // TO EDIT AN EXISTING FAQ:
-        // 1. Find the FAQ by its question text below
-        // 2. Edit the answer text (keep the HTML tags like <h3>, <ol>, <li>, <p>)
-        // 3. Add more keywords if needed (separated by spaces)
-        // 4. Save the file!
-
-        const faqData = [
-            {id:1,question:"Complete Startup Procedure",category:"Setup/Shutdown",pinned:true,keywords:"startup start begin setup turn on power on boot initialize getting started first steps how to start opening beginning preparation",answer:"<h3>Step-by-Step Startup:</h3><ol><li><strong>Turn on ATEM first</strong> - Press power button on front</li><li><strong>Turn on Cameras</strong> - Check both power strips ON</li><li><strong>Turn on MacBook</strong> - Open lid and log in</li><li><strong>Check Monitors</strong> - Dell and LG should auto-turn on</li><li><strong>Launch Companion</strong> - For Stream Deck control</li><li><strong>Setup QuickTime for TVs</strong> - New Movie Recording → Blackmagic Design → Drag to LG → Fullscreen</li><li><strong>Adjust Camera Brightness</strong> - Button 2 → ATEM Software → Camera → Gain +14dB → Adjust Aperture</li><li><strong>Check Audio</strong> - Press MIC1 ON (always muted after restart!) → Target -10dB</li></ol>"},
-            {id:2,question:"Complete Shutdown Procedure",category:"Setup/Shutdown",pinned:true,keywords:"shutdown shut down close closing turn off power off ending finish done after service cleanup",answer:"<h3>Step-by-Step Shutdown:</h3><ol><li><strong>Switch HDMI to Input 2</strong> - Press SWITCH button</li><li><strong>Shut down MacBook</strong> - Apple menu → Shut Down</li><li><strong>Turn off cameras</strong> - Both power strips OFF</li><li><strong>Turn off monitors</strong> - Press power buttons</li><li><strong>Unplug ATEM last</strong> - Unscrew power cable</li><li><strong>Cover equipment</strong> - Put covers on cameras</li></ol>"},
-            {id:3,question:"Cameras look dark or dim",category:"Video",pinned:true,keywords:"dark dim too dark black brightness exposure underexposed camera lighting gain aperture iris",answer:"<h3>Fix Dark Cameras:</h3><ol><li><strong>Press button 2 on ATEM</strong></li><li><strong>Open ATEM Software Control</strong></li><li><strong>Go to Camera page</strong></li><li><strong>Set Gain to +14dB</strong></li><li><strong>Drag Aperture to top center</strong> - Opens iris for more light</li><li><strong>Adjust until good</strong></li><li><strong>Repeat for Camera 1</strong></li></ol><p><strong>Note:</strong> Aperture controls light, Gain amplifies signal. Start with Aperture.</p>"},
-            {id:4,question:"No sound on livestream",category:"Audio",pinned:true,keywords:"no sound no audio silent muted cant hear quiet volume audio missing mute unmute mic microphone x32 matrix",answer:"<h3>Fix No Audio:</h3><ol><li><strong>Check X32 Matrix NOT muted</strong> - Ask audio engineer (#1 cause!)</li><li><strong>Press MIC1 ON on ATEM</strong> - Always muted after restart!</li><li><strong>Check Dell monitor audio bars</strong> - Should see green meters</li><li><strong>Target: -10dB</strong></li></ol><h3>If still no audio:</h3><ul><li>Check volume isn't down (arrows under MIC1)</li><li>Verify Ethernet in dock (blue light)</li><li>Check Equalizer/Compressor OFF</li></ul>"},
-            {id:5,question:"Restream freezing or disconnecting",category:"Networking",pinned:true,keywords:"restream restram re-stream streaming stream freeze freezing frozen glitch glitching glitchy lag lagging buffering stuttering disconnect disconnecting dropped connection lost internet network ethernet video choppy",answer:"<h3>Fix Restream Freezing:</h3><ol><li><strong>Check internet connection</strong></li><li><strong>Verify Ethernet - BLUE light on dock</strong></li><li><strong>Check Dell shows ON AIR + DATA RATE</strong></li><li><strong>Refresh Restream page</strong></li><li><strong>Try Safari instead of Chrome</strong></li></ol><h3>If still freezing:</h3><ul><li>Check ATEM cache (see cache FAQ if full)</li><li>Power cycle Anker dock</li><li>Restart MacBook</li></ul>"},
-            {id:6,question:"ATEM cache filling up or FULL",category:"Networking",pinned:true,keywords:"cache cashe full buffer buffering filling up atem network ethernet internet slow performance glitch glitching freezing restream restram stream streaming video issues",answer:"<h3>⚠️ CRITICAL: Press MIC1 ON after any fix!</h3><h3>FIX 1 (Try First):</h3><ol><li>Unplug Ethernet from ATEM back</li><li>Wait 5 seconds</li><li>Plug back in</li><li>Wait 30 seconds</li><li>Press MIC1 ON</li></ol><h3>FIX 2:</h3><ol><li>Power cycle ATEM (stops video!)</li><li>Wait 10 seconds</li><li>Plug back in</li><li>Press MIC1 ON</li></ol>"},
-            {id:7,question:"Stream Deck not working",category:"Stream Deck",pinned:true,keywords:"stream deck elgato buttons not working broke broken companion not responding dead dark blank",answer:"<h3>FIX 1: Restart Companion</h3><ol><li>Quit Companion</li><li>Reopen</li><li>Test buttons</li></ol><h3>FIX 2 (MOST COMMON!):</h3><ol><li>Click Companion in menu bar</li><li>Launch GUI</li><li>Find ATEM connection</li><li>Toggle OFF then ON</li></ol><h3>FIX 3: Hardware</h3><ul><li>Check dock BLUE light</li><li>Check USB plugged in</li></ul><h3>BACKUP:</h3><p>Use ATEM Software → Macros</p>"},
-            {id:8,question:"Camera out of focus",category:"Video",pinned:false,keywords:"focus blurry blur fuzzy soft unfocused out of focus clarity sharpness",answer:"<h3>Camera 2 (Manual):</h3><ul><li>Adjust focus ring on lens by hand</li></ul><h3>Camera 1 (Software):</h3><ol><li>Press button 1 on ATEM</li><li>ATEM Software → Camera page</li><li>Use Software Focus slider</li></ol>"},
-            {id:9,question:"QuickTime not showing video to TVs",category:"Software",pinned:false,keywords:"quicktime qt tv television lobby patio display video not showing blank black no signal",answer:"<h3>Setup QuickTime:</h3><ol><li>Launch QuickTime</li><li>File → New Movie Recording</li><li>Click dropdown → Choose Blackmagic Design</li><li>Drag to LG monitor</li><li>Click green fullscreen button</li></ol><h3>Troubleshooting:</h3><ul><li>No Blackmagic? Check ATEM powered on</li><li>TVs black? Check HDMI extender/TV inputs</li></ul>"},
-            {id:10,question:"Audio too quiet or loud",category:"Audio",pinned:false,keywords:"audio volume too loud too quiet soft low high levels gain microphone mic sound",answer:"<h3>Method 1: ATEM (Fastest)</h3><ul><li>UP/DOWN arrows under MIC1</li><li>Watch Dell audio meters</li><li>Target: -10dB</li></ul><h3>Method 2: Stream Deck</h3><ul><li>Page 3 → +/- buttons</li></ul><h3>Method 3: Software</h3><ul><li>ATEM Software → Audio → MIC1 slider</li></ul>"},
-            {id:11,question:"Audio Equalizer/Compressor issues",category:"Audio",pinned:false,keywords:"equalizer compressor limiter audio processing effects sound quality eq compression",answer:"<h3>Turn OFF Audio Processing:</h3><h3>Quick Fix:</h3><ol><li>Stream Deck Page 3</li><li>Press 'Sound Setup' button</li><li>Turns OFF Equalizer, Compressor, Limiter</li></ol><h3>Manual Check:</h3><ol><li>ATEM Software → Audio</li><li>Click MIC1</li><li>Verify: Equalizer OFF, Compressor OFF, Limiter OFF</li></ol><p><strong>Why?</strong> These can cause audio problems if misconfigured.</p>"},
-            {id:12,question:"One TV has no signal (lobby OR patio)",category:"Video",pinned:false,keywords:"tv no signal one tv lobby patio hdmi input source blank black",answer:"<h3>Fix Single TV:</h3><ol><li>Check which HDMI port has cable (back of TV)</li><li>Press Input/Source on remote</li><li>Select matching HDMI (1, 2, or 3)</li><li>Wait a few seconds</li></ol><h3>If still no signal:</h3><ul><li>Check HDMI firmly plugged in</li><li>Check QuickTime running fullscreen</li><li>Power cycle HDMI extender</li></ul>"},
-            {id:13,question:"BOTH TVs have no signal",category:"Video",pinned:false,keywords:"both tvs tv no signal lobby patio hdmi extender blank black quicktime anker dock usb-c",answer:"<h3>Fix Both TVs:</h3><ol><li>Check dock light is BLUE</li><li>Check MacBook + QuickTime fullscreen</li><li>Check USB-C to HDMI adapter (left side)</li><li>Power cycle HDMI extender</li></ol><h3>HDMI Extender Reset:</h3><ol><li>Unplug power from extender box</li><li>Wait 10 seconds</li><li>Plug back in</li><li>Wait 30-60 seconds</li></ol>"},
-            {id:14,question:"Stream Deck completely dark",category:"Stream Deck",pinned:false,keywords:"stream deck dark black off not working no lights dead elgato companion anker dock usb",answer:"<h3>Fix Dark Stream Deck:</h3><ol><li><strong>Check dock light:</strong><ul><li>OFF = Plug in power</li><li>GREEN = Fix USB-C connection</li><li>BLUE = Good ✓</li></ul></li><li>If GREEN: Unplug/replug USB-C from MacBook</li><li>Check Stream Deck USB in dock</li><li>Launch Companion app</li></ol><h3>Still dark?</h3><ul><li>Try different USB port</li><li>Restart Companion</li><li>Restart MacBook</li></ul>"},
-            {id:15,question:"Monitor won't turn on automatically",category:"Video",pinned:false,keywords:"monitor wont turn on dell lg screen display power button automatic",answer:"<h3>Manual Power On:</h3><p><strong>Dell Curved:</strong> Bottom far right button</p><p><strong>LG Flat:</strong> Bottom center/right button</p><p><strong>Note:</strong> This is NORMAL - monitors don't auto-turn on. Press manually each time.</p>"},
-            {id:16,question:"Docking station green or off",category:"Networking",pinned:false,keywords:"dock docking station anker green light off usb-c thunderbolt connection hub",answer:"<h3>Fix Dock Issues:</h3><h3>If GREEN:</h3><ol><li>Unplug USB-C from MacBook</li><li>Wait 3 seconds</li><li>Replug firmly</li><li>Try other USB-C port</li><li>Should turn BLUE</li></ol><h3>If OFF:</h3><ol><li>Check power adapter in dock</li><li>Check power in wall</li><li>Try different outlet</li></ol><p><strong>Light meanings:</strong> BLUE=Good, GREEN=Bad connection, OFF=No power</p>"},
-            {id:17,question:"HDMI switch wrong input",category:"Video",pinned:false,keywords:"hdmi switch input wrong slides livestream lvsrm service projector",answer:"<h3>HDMI Switch Inputs:</h3><p><strong>Input 1 (LVSRM):</strong> Livestream DURING service</p><p><strong>Input 2 (SLIDES):</strong> Slides AFTER service</p><h3>How to Switch:</h3><ol><li>Find HDMI switch box</li><li>Press SWITCH button</li><li>LED shows active input</li></ol><p><strong>Remember:</strong> Switch to Input 2 during shutdown!</p>"},
-            {id:18,question:"Picture in Picture (PiP)",category:"Video",pinned:false,keywords:"picture in picture pip split screen overlay two cameras dual view",answer:"<h3>Enable PiP:</h3><ol><li>Stream Deck Page 1</li><li>Press 'Top Right PiP'</li><li>Press Cut or Fade</li></ol><h3>Remove PiP:</h3><ol><li>Select different camera</li><li>Press Cut/Fade</li></ol><p><strong>What is PiP?</strong> Shows two cameras - one large, one small corner window.</p>"},
-            {id:19,question:"Lyrics overlay not working",category:"Software",pinned:false,keywords:"lyrics propresenter overlay words text captions displaylink camera 4 slides presentation",answer:"<h3>⚠️ Launch Order Matters!</h3><p><strong>ProPresenter MUST launch BEFORE DisplayLink!</strong></p><h3>Fix Lyrics:</h3><ol><li>Quit ProPresenter</li><li>Quit DisplayLink</li><li>Wait 5 seconds</li><li>Launch ProPresenter FIRST</li><li>Launch DisplayLink SECOND</li><li>Check Camera 4</li></ol><p><strong>Why?</strong> DisplayLink creates virtual display. If first, ProPresenter can't find it.</p>"},
-            {id:20,question:"DisplayLink / Camera 4 issues",category:"Software",pinned:false,keywords:"displaylink camera 4 no signal desktop showing propresenter lyrics overlay",answer:"<h3>Fix Camera 4:</h3><h3>If 'No Signal':</h3><ol><li>Launch DisplayLink Manager</li><li>Wait 10-15 seconds</li></ol><h3>If Shows Desktop:</h3><ol><li>Quit ProPresenter + DisplayLink</li><li>Wait 5 seconds</li><li>Launch ProPresenter FIRST</li><li>Launch DisplayLink SECOND</li></ol><h3>Still broken?</h3><ul><li>Check USB-C from Mac Mini</li><li>Restart both apps</li></ul>"},
-            {id:21,question:"ATEM not detected",category:"Video",pinned:false,keywords:"atem not detected not found cant find connection software control blackmagic switcher",answer:"<h3>Fix ATEM Not Found:</h3><ol><li>Check power cable (back right, screwed in)</li><li>Check front lights ON</li><li>Restart ATEM Software Control</li><li>Check USB/network cables</li><li>Power cycle ATEM:<ul><li>Unplug power</li><li>Wait 10 seconds</li><li>Plug back in</li><li>Wait 30-60 seconds</li><li>Reopen software</li></ul></li></ol>"},
-            {id:22,question:"Multiview not showing all cameras",category:"Video",pinned:false,keywords:"multiview cameras missing not showing blank black camera 1 2 3 4 dell monitor",answer:"<h3>Fix Missing Cameras:</h3><h3>Camera 1 & 2:</h3><ul><li>Check power strips ON</li><li>Check HDMI to ATEM</li><li>Check cameras powered on</li></ul><h3>Camera 3:</h3><ul><li>Check Mac Mini ON</li><li>Check ProPresenter running</li><li>Check HDMI to ATEM</li></ul><h3>Camera 4:</h3><ul><li>Launch DisplayLink</li><li>If desktop: Restart ProPresenter first</li><li>Check USB-C from Mac Mini</li></ul>"},
-            {id:23,question:"HDMI extender glitch",category:"Video",pinned:false,keywords:"hdmi extender glitch glitching flickering blinking tv signal problem splitter issue error",answer:"<h3>Fix HDMI Extender:</h3><ol><li>Unplug power from extender box</li><li>Wait 10 seconds</li><li>Plug back in</li><li>Wait 30-60 seconds</li><li>Check both TVs</li></ol><h3>Symptoms:</h3><ul><li>Flickering/blinking video</li><li>Cutting in and out</li><li>Color problems</li><li>Both TVs losing signal</li></ul>"},
-            {id:24,question:"Restream not streaming to YouTube/Facebook",category:"Networking",pinned:false,keywords:"restream restram re-stream streaming stream youtube facebook not streaming not live platforms social media obs connect glitch glitching issue problem",answer:"<h3>Fix Restream Not Live:</h3><ol><li>Quit Chrome completely</li><li>Open Safari</li><li>Go to Restream.io</li><li>Click 'Connect to OBS'</li><li>Toggle YouTube/Facebook ON (green)</li><li>Check ATEM cache on Dell monitor</li></ol><h3>Still not streaming?</h3><ul><li>Check ON AIR button lit</li><li>Check Dell shows ON AIR</li><li>Check internet</li><li>Press OFF then ON AIR</li></ul>"},
-            {id:25,question:"ON AIR pressed but not streaming",category:"Networking",pinned:false,keywords:"on air onair not streaming not live button pressed restream restram stream obs youtube facebook glitch issue problem",answer:"<h3>Fix ON AIR Not Streaming:</h3><ol><li>Check ATEM ON AIR lit (red)</li><li>Check Dell shows 'ON AIR' in red</li><li>Open Restream.io</li><li>Click 'Connect to OBS'</li><li>Toggle all platforms ON</li></ol><h3>If still not streaming:</h3><ul><li>Press OFF then ON AIR to reset</li><li>Check Ethernet in dock (blue light)</li><li>Refresh Restream page</li><li>Check ATEM cache</li></ul>"},
-            {id:26,question:"Restream shows no camera signal",category:"Networking",pinned:false,keywords:"restream restram re-stream streaming stream no signal no camera black screen obs connection ethernet on air glitch issue problem",answer:"<h3>Fix No Camera Signal:</h3><ol><li>Check ATEM ON AIR lit</li><li>Check Dell shows 'ON AIR'</li><li>In Restream click 'Connect to OBS'</li><li>Check Ethernet in dock (BLUE light)</li><li>Press OFF then ON AIR on ATEM</li></ol><h3>Still black?</h3><ul><li>Check which camera selected</li><li>Switch cameras and back</li><li>Check ATEM cache</li><li>Power cycle Anker dock</li></ul>"},
-            {id:27,question:"Stream Deck Button Guide",category:"Stream Deck",pinned:false,keywords:"stream deck buttons guide page 1 2 3 camera cut fade pip lyrics lower thirds record names",answer:"<h3>Stream Deck Pages:</h3><h3>PAGE 1 - Main:</h3><ul><li>CAM 1, 2, 3 - Select cameras</li><li>CUT - Instant switch</li><li>FADE - Smooth transition</li><li>Macro on Air</li><li>Lyrics - Toggle overlay</li><li>PiP - Picture in Picture</li><li>FTB - Fade to Black</li><li>Connect 2.0</li></ul><h3>PAGE 2 - Graphics:</h3><ul><li>Name lower thirds</li><li>On/Off Air buttons</li></ul><h3>PAGE 3 - Audio/Recording:</h3><ul><li>Record button</li><li>Stream button</li><li>Sound Setup - Turns OFF EQ/Compressor/Limiter</li><li>+/- Volume - Adjust MIC1</li></ul>"}
-        ];
-
-        const fuseOptions = {keys:['question','answer','category','keywords'],threshold:0.3,includeScore:true,ignoreLocation:true};
-        const fuse = new Fuse(faqData, fuseOptions);
-        
-        let currentCategory = 'all';
-        let currentSearch = '';
-        
-        const searchBar = document.getElementById('searchBar');
-        const faqList = document.getElementById('faqList');
-        const pinnedList = document.getElementById('pinnedList');
-        const noResults = document.getElementById('noResults');
-        const categoryBtns = document.querySelectorAll('.category-btn');
-        const pinnedSection = document.getElementById('pinnedSection');
-        const allSection = document.getElementById('allSection');
-
-        function renderFAQ(faq, container, isSearch = false) {
-            const item = document.createElement('div');
-            item.className = `faq-item ${faq.pinned && !isSearch ? 'pinned' : ''}`;
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = faq.answer;
-            const previewText = tempDiv.textContent.substring(0, 120) + '...';
-            item.innerHTML = `<div class="faq-question"><span>${faq.question}</span><span class="expand-icon">▼</span></div><span class="faq-category">${faq.category}</span><div class="faq-preview">${previewText}</div><div class="faq-answer">${faq.answer}</div>`;
-            item.addEventListener('click', () => {
-                const answer = item.querySelector('.faq-answer');
-                const isExpanded = answer.classList.contains('expanded');
-                document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('expanded'));
-                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('expanded'));
-                if (!isExpanded) {
-                    answer.classList.add('expanded');
-                    item.classList.add('expanded');
-                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-            container.appendChild(item);
-        }
-
-        function renderAllFAQs() {
-            faqList.innerHTML = '';
-            pinnedList.innerHTML = '';
-            let filteredData = faqData;
-            if (currentCategory !== 'all') filteredData = faqData.filter(faq => faq.category === currentCategory);
-            if (currentSearch) {
-                const expandedQuery = expandSearchQuery(currentSearch);
-                const searchResults = fuse.search(expandedQuery);
-                filteredData = searchResults.map(result => result.item);
-                pinnedSection.style.display = 'none';
-                allSection.querySelector('.section-title').textContent = 'Search Results';
-                if (filteredData.length === 0) {
-                    faqList.style.display = 'none';
-                    noResults.style.display = 'block';
-                    return;
-                } else {
-                    faqList.style.display = 'flex';
-                    noResults.style.display = 'none';
-                }
-                filteredData.forEach(faq => renderFAQ(faq, faqList, true));
-            } else {
-                pinnedSection.style.display = 'block';
-                allSection.querySelector('.section-title').textContent = 'All Troubleshooting Guides';
-                faqList.style.display = 'flex';
-                noResults.style.display = 'none';
-                const pinnedFAQs = filteredData.filter(faq => faq.pinned);
-                pinnedFAQs.forEach(faq => renderFAQ(faq, pinnedList));
-                const regularFAQs = filteredData.filter(faq => !faq.pinned);
-                regularFAQs.forEach(faq => renderFAQ(faq, faqList));
-                if (pinnedFAQs.length === 0) pinnedSection.style.display = 'none';
-            }
-        }
-
-        searchBar.addEventListener('input', (e) => {currentSearch = e.target.value.trim();renderAllFAQs();});
-        categoryBtns.forEach(btn => {btn.addEventListener('click', () => {categoryBtns.forEach(b => b.classList.remove('active'));btn.classList.add('active');currentCategory = btn.dataset.category;searchBar.value = '';currentSearch = '';renderAllFAQs();});});
-        
-        renderAllFAQs();
+renderAll();
     </script>
 </body>
 </html>
