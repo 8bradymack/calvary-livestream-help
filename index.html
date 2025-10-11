@@ -12,8 +12,25 @@
         .subtitle { font-size: 0.95em; opacity: 0.9; margin-bottom: 20px; }
         .search-container { max-width: 600px; margin: -20px auto 0; padding: 0 20px; position: relative; z-index: 10; }
         #searchBar { width: 100%; padding: 16px 50px 16px 20px; font-size: 1.1em; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); outline: none; transition: box-shadow 0.3s; }
+        #searchBar::placeholder { color: #999; }
         #searchBar:focus { box-shadow: 0 6px 30px rgba(59,130,246,0.3); }
         .search-icon { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); color: #999; font-size: 1.3em; }
+        .suggestions-dropdown { position: absolute; top: 100%; left: 20px; right: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); margin-top: 8px; max-height: 400px; overflow-y: auto; display: none; z-index: 100; }
+        .suggestions-dropdown.active { display: block; }
+        .suggestion-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+        .suggestion-item:hover { background: #f8fafc; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-question { font-weight: 600; color: #1e3a8a; font-size: 0.95em; margin-bottom: 4px; }
+        .suggestion-preview { font-size: 0.85em; color: #666; }
+        .suggestion-category { display: inline-block; padding: 2px 8px; background: #e0f2fe; color: #0369a1; border-radius: 8px; font-size: 0.7em; font-weight: 600; margin-top: 4px; }
+        .highlight { background: #fef3c7; padding: 2px 4px; border-radius: 2px; font-weight: 600; }
+        .search-stats { text-align: center; color: #666; font-size: 0.9em; margin: 20px 0 10px; }
+        .recent-searches { max-width: 600px; margin: 15px auto 0; padding: 0 20px; }
+        .recent-searches-title { font-size: 0.85em; color: #666; margin-bottom: 8px; }
+        .recent-tag { display: inline-block; padding: 6px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 16px; font-size: 0.85em; margin: 4px; cursor: pointer; transition: all 0.2s; color: #666; }
+        .recent-tag:hover { border-color: #3b82f6; color: #3b82f6; transform: translateY(-1px); background: #f8fafc; }
+        .clear-recent { display: inline-block; padding: 6px 12px; background: transparent; border: none; color: #999; font-size: 0.85em; cursor: pointer; margin-left: 8px; }
+        .clear-recent:hover { color: #3b82f6; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
         .categories { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; justify-content: center; }
         .category-btn { padding: 10px 20px; background: white; border: 2px solid #e5e7eb; border-radius: 25px; cursor: pointer; font-size: 0.95em; transition: all 0.3s; color: #666; font-weight: 500; }
@@ -51,12 +68,19 @@
         <h1>🎥 Calvary Livestream Troubleshooting</h1>
         <p class="subtitle">Quick solutions for common livestream issues</p>
         <div class="search-container">
-            <input type="text" id="searchBar" placeholder="Search for a problem..." autocomplete="off">
+            <input type="text" id="searchBar" placeholder="Search: 'no sound', 'camera dark', 'deck broken'..." autocomplete="off">
             <span class="search-icon">🔍</span>
+            <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
+        </div>
+        <div class="recent-searches" id="recentSearches" style="display:none;">
+            <div class="recent-searches-title">Recent searches:</div>
+            <div id="recentTags"></div>
         </div>
     </header>
 
     <div class="container">
+        <div class="search-stats" id="searchStats"></div>
+        
         <div class="categories" id="categories">
             <button class="category-btn active" data-category="all">All</button>
             <button class="category-btn" data-category="Setup/Shutdown">Setup/Shutdown</button>
@@ -148,68 +172,477 @@ const faqData=[
 {id:26,question:"Restream shows no camera signal",category:"Networking",pinned:false,keywords:"restream no signal black screen obs ethernet cache",answer:"<h3>Fix No Camera Signal:</h3><ol><li>Check ATEM ON AIR lit</li><li>Check Dell shows ON AIR</li><li>In Restream click Connect to OBS</li><li>Check Ethernet in dock (BLUE light)</li><li>Press OFF then ON AIR on ATEM</li></ol><h3>Still black?</h3><ul><li>Check which camera selected</li><li>Switch cameras and back</li><li>Check ATEM cache</li></ul>"}
 ];
 
-const searchSynonyms={audio:['sound','volume','mic','mute'],video:['picture','screen'],camera:['cam'],dark:['dim','brightness'],atem:['atm','switcher'],restream:['restram','streaming','stream'],glitching:['glitch','freezing','frozen','lagging'],broke:['broken','not working']};
-
-function expandSearchQuery(q){let w=q.toLowerCase().split(' ').filter(x=>x.length>0);let e=new Set(w);w.forEach(word=>{if(searchSynonyms[word])searchSynonyms[word].forEach(s=>e.add(s));Object.keys(searchSynonyms).forEach(k=>{if(searchSynonyms[k].includes(word)){e.add(k);searchSynonyms[k].forEach(s=>e.add(s))}})});return Array.from(e).join(' ')}
-
-const fuse=new Fuse(faqData,{keys:['question','answer','keywords'],threshold:0.3});
-let currentCategory='all',currentSearch='';
-
-function renderFAQ(faq,container){
-const item=document.createElement('div');
-item.className=`faq-item ${faq.pinned?'pinned':''}`;
-const preview=faq.answer.replace(/<[^>]*>/g,'').substring(0,120)+'...';
-item.innerHTML=`<div class="faq-question"><span>${faq.question}</span><span class="expand-icon">▼</span></div><span class="faq-category">${faq.category}</span><div class="faq-preview">${preview}</div><div class="faq-answer">${faq.answer}</div>`;
-item.onclick=()=>{
-const isExpanded=item.classList.contains('expanded');
-document.querySelectorAll('.faq-answer').forEach(a=>a.classList.remove('expanded'));
-document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('expanded'));
-if(!isExpanded){
-item.classList.add('expanded');
-item.querySelector('.faq-answer').classList.add('expanded');
-}};
-container.appendChild(item);
-}
-
-function renderAll(){
-document.getElementById('pinnedList').innerHTML='';
-document.getElementById('faqList').innerHTML='';
-let filtered=faqData;
-if(currentCategory!=='all')filtered=faqData.filter(f=>f.category===currentCategory);
-if(currentSearch){
-const results=fuse.search(expandSearchQuery(currentSearch));
-filtered=results.map(r=>r.item);
-document.getElementById('pinnedSection').style.display='none';
-if(filtered.length===0){document.getElementById('noResults').style.display='block';document.getElementById('faqList').style.display='none';return;}
-else{document.getElementById('noResults').style.display='none';document.getElementById('faqList').style.display='flex';}
-filtered.forEach(f=>renderFAQ(f,document.getElementById('faqList')));
-}else{
-document.getElementById('pinnedSection').style.display='block';
-document.getElementById('noResults').style.display='none';
-document.getElementById('faqList').style.display='flex';
-const pinned=filtered.filter(f=>f.pinned);
-pinned.forEach(f=>renderFAQ(f,document.getElementById('pinnedList')));
-filtered.filter(f=>!f.pinned).forEach(f=>renderFAQ(f,document.getElementById('faqList')));
-}}
-
-document.getElementById('searchBar').oninput=e=>{currentSearch=e.target.value.trim();renderAll()};
-document.querySelectorAll('.category-btn').forEach(btn=>btn.onclick=()=>{
-document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
-btn.classList.add('active');
-currentCategory=btn.dataset.category;
-document.getElementById('searchBar').value='';
-currentSearch='';
-renderAll();
-});
-
-document.getElementById('reportBtn').onclick=e=>{e.preventDefault();document.getElementById('contactModal').style.display='block'};
-document.getElementById('cancelBtn').onclick=()=>document.getElementById('contactModal').style.display='none';
-document.getElementById('contactForm').onsubmit=async e=>{
-e.preventDefault();
-const res=await fetch(e.target.action,{method:'POST',body:new FormData(e.target),headers:{'Accept':'application/json'}});
-if(res.ok){document.getElementById('contactForm').style.display='none';document.getElementById('successMessage').style.display='block';setTimeout(()=>document.getElementById('contactModal').style.display='none',3000)}
+const advancedSynonyms={
+    audio:['sound','volume','mic','microphone','mute','muted','silent','quiet','hear','hearing','mics'],
+    video:['picture','screen','display','visual','image','showing','feed','signal'],
+    camera:['cam','cameras','cams'],
+    dark:['dim','brightness','bright','light','lighting','exposure','black','too dark'],
+    atem:['atm','switcher','mixer'],
+    restream:['restram','streaming','stream','live','broadcast','broadcasting'],
+    glitching:['glitch','freezing','frozen','lagging','lag','stuttering','choppy','buffering','cutting','cuts'],
+    broke:['broken','not working','doesnt work','down','failed','failing','issue','problem','wont','cant','help'],
+    startup:['start','starting','boot','booting','turn on','power on','setup','beginning'],
+    shutdown:['shut down','turn off','power off','close','closing','ending','end'],
+    tv:['television','tvs','monitor','screen','display','lobby','patio'],
+    deck:['streamdeck','stream deck','elgato','buttons'],
+    quicktime:['quick time','qt','recording','record'],
+    macbook:['mac','laptop','computer'],
+    ethernet:['internet','network','connection','wifi','online'],
+    cache:['buffer','full','filling','storage'],
+    lyrics:['propresenter','overlay','words','text','songs'],
+    displaylink:['camera 4','cam 4','virtual'],
+    dell:['curved'],
+    lg:['flat'],
+    dock:['anker','docking station','hub','usb'],
+    green:['light','led','status'],
+    blue:['light','led','status']
 };
 
+const problemPatterns = [
+    {pattern: /no (sound|audio|voice|mic)/i, boost: ['audio', 'sound', 'muted', 'mic1']},
+    {pattern: /(dark|dim|bright|black screen|too dark)/i, boost: ['camera', 'dark', 'brightness', 'aperture', 'gain']},
+    {pattern: /(freez|lag|glitch|stutter|buffer|chop)/i, boost: ['restream', 'freezing', 'ethernet', 'cache', 'quicktime']},
+    {pattern: /(not work|broken|doesn't|down|won't|can't|help|issue|problem)/i, boost: ['troubleshoot']},
+    {pattern: /(tv|monitor|screen).*(no signal|black|blank|nothing)/i, boost: ['tv', 'signal', 'hdmi', 'input']},
+    {pattern: /cache|full|buffer/i, boost: ['cache', 'full', 'ethernet', 'quicktime', 'recording']},
+    {pattern: /deck|button/i, boost: ['stream deck', 'companion', 'toggle']},
+    {pattern: /(start|boot|turn on|power on|setup|beginning)/i, boost: ['startup', 'procedure', 'complete']},
+    {pattern: /(shut|turn off|close|end)/i, boost: ['shutdown', 'procedure', 'complete']},
+    {pattern: /(youtube|facebook|social|platform)/i, boost: ['restream', 'streaming', 'not streaming']},
+    {pattern: /on air|streaming|live/i, boost: ['on air', 'restream', 'obs']},
+    {pattern: /lyric|propresenter|overlay|song|word/i, boost: ['lyrics', 'propresenter', 'displaylink', 'camera 4']},
+    {pattern: /(camera 4|cam 4|displaylink)/i, boost: ['displaylink', 'propresenter', 'virtual']},
+    {pattern: /(both|all|multiple).*(tv|monitor)/i, boost: ['both tvs', 'hdmi extender']},
+    {pattern: /(one|single|lobby|patio).*(tv|monitor)/i, boost: ['one tv', 'single', 'input']},
+    {pattern: /green|blue.*(light|dock)/i, boost: ['dock', 'anker', 'ethernet', 'usb']},
+    {pattern: /detect|found|recognize|see/i, boost: ['atem', 'not detected', 'quicktime']},
+    {pattern: /(quicktime|recording|record)/i, boost: ['quicktime', 'blackmagic', 'movie']},
+    {pattern: /(internet|network|connection|ethernet|wifi)/i, boost: ['ethernet', 'network', 'dock', 'blue light']}
+];
+
+let recentSearches = [];
+const MAX_RECENT = 5;
+
+function loadRecentSearches() {
+    const stored = {};
+    if (stored.recentSearches) {
+        recentSearches = stored.recentSearches;
+    }
+}
+
+function saveRecentSearch(query) {
+    if (!query || query.length < 2) return;
+    query = query.trim().toLowerCase();
+    recentSearches = recentSearches.filter(s => s !== query);
+    recentSearches.unshift(query);
+    recentSearches = recentSearches.slice(0, MAX_RECENT);
+    renderRecentSearches();
+}
+
+function renderRecentSearches() {
+    const container = document.getElementById('recentSearches');
+    const tagsContainer = document.getElementById('recentTags');
+    
+    if (recentSearches.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'block';
+    tagsContainer.innerHTML = recentSearches.map(search => 
+        `<span class="recent-tag" onclick="applyRecentSearch('${search}')">${search}</span>`
+    ).join('') + '<button class="clear-recent" onclick="clearRecentSearches()">Clear</button>';
+}
+
+function applyRecentSearch(query) {
+    document.getElementById('searchBar').value = query;
+    currentSearch = query;
+    renderAll();
+}
+
+function clearRecentSearches() {
+    recentSearches = [];
+    renderRecentSearches();
+}
+
+function expandSearchQuery(query) {
+    let words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    let expanded = new Set(words);
+    
+    words.forEach(word => {
+        if (advancedSynonyms[word]) {
+            advancedSynonyms[word].forEach(syn => expanded.add(syn));
+        }
+        
+        Object.keys(advancedSynonyms).forEach(key => {
+            if (advancedSynonyms[key].includes(word)) {
+                expanded.add(key);
+                advancedSynonyms[key].forEach(syn => expanded.add(syn));
+            }
+        });
+    });
+    
+    problemPatterns.forEach(({pattern, boost}) => {
+        if (pattern.test(query)) {
+            boost.forEach(term => expanded.add(term));
+        }
+    });
+    
+    return Array.from(expanded).join(' ');
+}
+
+function highlightText(text, searchTerms) {
+    if (!searchTerms || searchTerms.length === 0) return text;
+    
+    let result = text;
+    searchTerms.forEach(term => {
+        if (term.length < 2) return;
+        const regex = new RegExp(`(${term})`, 'gi');
+        result = result.replace(regex, '<span class="highlight">$1</span>');
+    });
+    return result;
+}
+
+function intelligentSearch(query) {
+    if (!query) return faqData;
+    
+    const originalQuery = query;
+    const expandedQuery = expandSearchQuery(query);
+    const searchTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+    
+    const typoMap = {
+        'atm': 'atem',
+        'restram': 'restream',
+        'restrem': 'restream',
+        'cam': 'camera',
+        'cams': 'camera',
+        'mics': 'mic',
+        'doesnt': 'doesn\'t',
+        'wont': 'won\'t',
+        'cant': 'can\'t',
+        'youtube': 'restream youtube',
+        'facebook': 'restream facebook',
+        'fb': 'facebook',
+        'yt': 'youtube'
+    };
+    
+    let correctedQuery = query.toLowerCase();
+    Object.keys(typoMap).forEach(typo => {
+        correctedQuery = correctedQuery.replace(new RegExp('\\b' + typo + '\\b', 'g'), typoMap[typo]);
+    });
+    
+    const fuse = new Fuse(faqData, {
+        keys: [
+            {name: 'question', weight: 0.45},
+            {name: 'keywords', weight: 0.45},
+            {name: 'answer', weight: 0.1}
+        ],
+        threshold: 0.45,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2,
+        distance: 150,
+        useExtendedSearch: true
+    });
+    
+    let results = fuse.search(expandedQuery);
+    
+    if (results.length < 3) {
+        const altResults = fuse.search(correctedQuery);
+        results = [...results, ...altResults].filter((v, i, a) => 
+            a.findIndex(t => t.item.id === v.item.id) === i
+        );
+    }
+    
+    if (results.length < 3) {
+        const basicResults = fuse.search(originalQuery);
+        results = [...results, ...basicResults].filter((v, i, a) => 
+            a.findIndex(t => t.item.id === v.item.id) === i
+        );
+    }
+    
+    results = results.map(r => ({
+        ...r.item,
+        score: r.score,
+        searchTerms: searchTerms
+    }));
+    
+    results.forEach(result => {
+        let bonusScore = 0;
+        
+        const questionLower = result.question.toLowerCase();
+        const keywordsLower = result.keywords.toLowerCase();
+        const answerLower = result.answer.replace(/<[^>]*>/g, '').toLowerCase();
+        const combinedText = questionLower + ' ' + keywordsLower + ' ' + answerLower;
+        
+        if (questionLower.includes(originalQuery.toLowerCase())) {
+            bonusScore -= 0.5;
+        }
+        if (keywordsLower.includes(originalQuery.toLowerCase())) {
+            bonusScore -= 0.4;
+        }
+        
+        searchTerms.forEach((term, index) => {
+            const isImportantTerm = term.length > 4 || ['atem', 'deck', 'tv'].includes(term);
+            const multiplier = isImportantTerm ? 1.5 : 1.0;
+            const positionBonus = index === 0 ? 1.2 : 1.0;
+            
+            if (questionLower.includes(term)) {
+                bonusScore -= 0.25 * multiplier * positionBonus;
+            }
+            if (keywordsLower.includes(term)) {
+                bonusScore -= 0.2 * multiplier * positionBonus;
+            }
+            
+            const answerMatches = (answerLower.match(new RegExp('\\b' + term + '\\b', 'g')) || []).length;
+            bonusScore -= answerMatches * 0.04;
+        });
+        
+        if (result.pinned) bonusScore -= 0.12;
+        
+        const allTermsInQuestion = searchTerms.every(term => questionLower.includes(term));
+        if (allTermsInQuestion) bonusScore -= 0.4;
+        
+        const allTermsInKeywords = searchTerms.every(term => keywordsLower.includes(term));
+        if (allTermsInKeywords) bonusScore -= 0.35;
+        
+        const allTermsInCombined = searchTerms.every(term => combinedText.includes(term));
+        if (allTermsInCombined) bonusScore -= 0.2;
+        
+        const matchPercentage = searchTerms.filter(term => 
+            questionLower.includes(term) || keywordsLower.includes(term)
+        ).length / searchTerms.length;
+        bonusScore -= matchPercentage * 0.2;
+        
+        const problemWords = ['no', 'not', 'won\'t', 'can\'t', 'broken', 'issue', 'problem', 'help'];
+        const hasProblemWord = searchTerms.some(term => problemWords.includes(term));
+        if (hasProblemWord && questionLower.match(/fix|troubleshoot|issue|problem/i)) {
+            bonusScore -= 0.15;
+        }
+        
+        const categoryBoosts = {
+            'Setup/Shutdown': ['start', 'startup', 'shutdown', 'boot', 'turn', 'power'],
+            'Audio': ['sound', 'audio', 'mic', 'mute', 'volume', 'hear'],
+            'Video': ['camera', 'dark', 'bright', 'video', 'picture', 'tv', 'monitor'],
+            'Networking': ['internet', 'ethernet', 'network', 'connection', 'stream', 'cache'],
+            'Stream Deck': ['deck', 'button', 'companion'],
+            'Software': ['quicktime', 'propresenter', 'displaylink', 'software']
+        };
+        
+        Object.keys(categoryBoosts).forEach(cat => {
+            if (result.category === cat) {
+                const matchingTerms = searchTerms.filter(term => 
+                    categoryBoosts[cat].some(boost => boost.includes(term) || term.includes(boost))
+                );
+                bonusScore -= matchingTerms.length * 0.1;
+            }
+        });
+        
+        result.score += bonusScore;
+    });
+    
+    results.sort((a, b) => a.score - b.score);
+    
+    if (results.length < 2 || (results.length > 0 && results[0].score > 0.7)) {
+        const relevantPinned = faqData.filter(f => f.pinned).map(f => ({
+            ...f,
+            searchTerms: searchTerms,
+            score: 0.8
+        }));
+        results = [...results, ...relevantPinned].filter((v, i, a) => 
+            a.findIndex(t => t.id === v.id) === i
+        ).sort((a, b) => a.score - b.score);
+    }
+    
+    return results;
+}
+
+let suggestionTimeout;
+let currentSuggestionIndex = -1;
+
+function showSuggestions(query) {
+    clearTimeout(suggestionTimeout);
+    
+    if (!query || query.length < 2) {
+        document.getElementById('suggestionsDropdown').classList.remove('active');
+        return;
+    }
+    
+    suggestionTimeout = setTimeout(() => {
+        const results = intelligentSearch(query).slice(0, 5);
+        const dropdown = document.getElementById('suggestionsDropdown');
+        
+        if (results.length === 0) {
+            dropdown.classList.remove('active');
+            return;
+        }
+        
+        dropdown.innerHTML = results.map((faq, index) => {
+            const preview = faq.answer.replace(/<[^>]*>/g, '').substring(0, 80) + '...';
+            const highlightedQuestion = highlightText(faq.question, faq.searchTerms);
+            
+            return `
+                <div class="suggestion-item" data-index="${index}" data-id="${faq.id}">
+                    <div class="suggestion-question">${highlightedQuestion}</div>
+                    <div class="suggestion-preview">${preview}</div>
+                    <span class="suggestion-category">${faq.category}</span>
+                </div>
+            `;
+        }).join('');
+        
+        dropdown.classList.add('active');
+        
+        dropdown.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const faqId = parseInt(item.dataset.id);
+                const faq = faqData.find(f => f.id === faqId);
+                if (faq) {
+                    document.getElementById('searchBar').value = faq.question;
+                    currentSearch = faq.question;
+                    saveRecentSearch(query);
+                    renderAll();
+                    dropdown.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        const faqElement = document.querySelector(`.faq-item[data-id="${faqId}"]`);
+                        if (faqElement) {
+                            faqElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            faqElement.click();
+                        }
+                    }, 100);
+                }
+            });
+        });
+    }, 200);
+}
+
+let currentCategory = 'all';
+let currentSearch = '';
+
+function renderFAQ(faq, container) {
+    const item = document.createElement('div');
+    item.className = `faq-item ${faq.pinned ? 'pinned' : ''}`;
+    item.dataset.id = faq.id;
+    
+    const preview = faq.answer.replace(/<[^>]*>/g, '').substring(0, 120) + '...';
+    const highlightedQuestion = faq.searchTerms ? highlightText(faq.question, faq.searchTerms) : faq.question;
+    const highlightedPreview = faq.searchTerms ? highlightText(preview, faq.searchTerms) : preview;
+    
+    item.innerHTML = `
+        <div class="faq-question"><span>${highlightedQuestion}</span><span class="expand-icon">▼</span></div>
+        <span class="faq-category">${faq.category}</span>
+        <div class="faq-preview">${highlightedPreview}</div>
+        <div class="faq-answer">${faq.answer}</div>
+    `;
+    
+    item.onclick = () => {
+        const isExpanded = item.classList.contains('expanded');
+        document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('expanded'));
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('expanded'));
+        if (!isExpanded) {
+            item.classList.add('expanded');
+            item.querySelector('.faq-answer').classList.add('expanded');
+        }
+    };
+    
+    container.appendChild(item);
+}
+
+function renderAll() {
+    document.getElementById('pinnedList').innerHTML = '';
+    document.getElementById('faqList').innerHTML = '';
+    document.getElementById('suggestionsDropdown').classList.remove('active');
+    
+    let filtered = faqData;
+    
+    if (currentCategory !== 'all') {
+        filtered = faqData.filter(f => f.category === currentCategory);
+    }
+    
+    if (currentSearch) {
+        filtered = intelligentSearch(currentSearch);
+        document.getElementById('pinnedSection').style.display = 'none';
+        
+        if (filtered.length === 0) {
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('faqList').style.display = 'none';
+            document.getElementById('searchStats').textContent = '';
+            return;
+        } else {
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('faqList').style.display = 'flex';
+            document.getElementById('searchStats').textContent = `Found ${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
+        }
+        
+        filtered.forEach(f => renderFAQ(f, document.getElementById('faqList')));
+        
+        saveRecentSearch(currentSearch);
+    } else {
+        document.getElementById('pinnedSection').style.display = 'block';
+        document.getElementById('noResults').style.display = 'none';
+        document.getElementById('faqList').style.display = 'flex';
+        document.getElementById('searchStats').textContent = '';
+        
+        const pinned = filtered.filter(f => f.pinned);
+        pinned.forEach(f => renderFAQ(f, document.getElementById('pinnedList')));
+        filtered.filter(f => !f.pinned).forEach(f => renderFAQ(f, document.getElementById('faqList')));
+    }
+}
+
+const searchBar = document.getElementById('searchBar');
+
+searchBar.addEventListener('input', e => {
+    currentSearch = e.target.value.trim();
+    showSuggestions(currentSearch);
+    if (!currentSearch) renderAll();
+});
+
+searchBar.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        renderAll();
+    }
+});
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.search-container')) {
+        document.getElementById('suggestionsDropdown').classList.remove('active');
+    }
+});
+
+document.querySelectorAll('.category-btn').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCategory = btn.dataset.category;
+    document.getElementById('searchBar').value = '';
+    currentSearch = '';
+    renderAll();
+});
+
+document.getElementById('reportBtn').onclick = e => {
+    e.preventDefault();
+    document.getElementById('contactModal').style.display = 'block';
+};
+
+document.getElementById('cancelBtn').onclick = () => {
+    document.getElementById('contactModal').style.display = 'none';
+};
+
+document.getElementById('contactForm').onsubmit = async e => {
+    e.preventDefault();
+    const res = await fetch(e.target.action, {
+        method: 'POST',
+        body: new FormData(e.target),
+        headers: {'Accept': 'application/json'}
+    });
+    if (res.ok) {
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'block';
+        setTimeout(() => document.getElementById('contactModal').style.display = 'none', 3000);
+    }
+};
+
+loadRecentSearches();
+renderRecentSearches();
 renderAll();
     </script>
 </body>
