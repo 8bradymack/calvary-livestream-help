@@ -274,6 +274,11 @@ function clearRecentSearches() {
 
 function expandSearchQuery(query) {
     let words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    
+    // Remove common stop words
+    const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
+    words = words.filter(w => !stopWords.includes(w) && w !== '/');
+    
     let expanded = new Set(words);
     
     words.forEach(word => {
@@ -301,8 +306,12 @@ function expandSearchQuery(query) {
 function highlightText(text, searchTerms) {
     if (!searchTerms || searchTerms.length === 0) return text;
     
+    // Filter out stop words from highlighting
+    const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
+    const termsToHighlight = searchTerms.filter(term => !stopWords.includes(term.toLowerCase()) && term.length > 1);
+    
     let result = text;
-    searchTerms.forEach(term => {
+    termsToHighlight.forEach(term => {
         if (term.length < 2) return;
         const regex = new RegExp(`(${term})`, 'gi');
         result = result.replace(regex, '<span class="highlight">$1</span>');
@@ -315,7 +324,10 @@ function intelligentSearch(query) {
     
     const originalQuery = query;
     const expandedQuery = expandSearchQuery(query);
-    const searchTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+    
+    // Remove stop words from search terms
+    const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
+    const searchTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.includes(w));
     
     const typoMap = {
         'atm': 'atem',
@@ -631,53 +643,38 @@ clearSearchBtn.addEventListener('click', () => {
 });
 
 let touchStartY = 0;
+let touchCurrentY = 0;
 let isPullingToRefresh = false;
+let isRefreshing = false;
 
 document.addEventListener('touchstart', e => {
-    if (window.scrollY === 0) {
+    if (window.scrollY === 0 && !isRefreshing) {
         touchStartY = e.touches[0].clientY;
+        touchCurrentY = touchStartY;
     }
 }, { passive: true });
 
 document.addEventListener('touchmove', e => {
-    if (window.scrollY === 0) {
-        const touchY = e.touches[0].clientY;
-        const pullDistance = touchY - touchStartY;
+    if (window.scrollY === 0 && !isRefreshing) {
+        touchCurrentY = e.touches[0].clientY;
+        const pullDistance = touchCurrentY - touchStartY;
         
-        if (pullDistance > 100) {
+        // Only trigger if pulled down more than 150px
+        if (pullDistance > 150) {
             isPullingToRefresh = true;
         }
     }
 }, { passive: true });
 
 document.addEventListener('touchend', () => {
-    if (isPullingToRefresh) {
+    if (isPullingToRefresh && !isRefreshing) {
+        isRefreshing = true;
         location.reload();
     }
     isPullingToRefresh = false;
     touchStartY = 0;
+    touchCurrentY = 0;
 });
-
-let scrollAtTop = true;
-let scrollUpCount = 0;
-
-window.addEventListener('scroll', () => {
-    if (window.scrollY === 0) {
-        scrollAtTop = true;
-    } else {
-        scrollAtTop = false;
-        scrollUpCount = 0;
-    }
-});
-
-window.addEventListener('wheel', e => {
-    if (scrollAtTop && e.deltaY < -50) {
-        scrollUpCount++;
-        if (scrollUpCount > 3) {
-            location.reload();
-        }
-    }
-}, { passive: true });
 
 document.addEventListener('click', e => {
     if (!e.target.closest('.search-container')) {
