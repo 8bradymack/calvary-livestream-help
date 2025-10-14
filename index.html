@@ -65,9 +65,19 @@
         footer { text-align: center; padding: 30px 20px; color: #666; font-size: 0.9em; background: white; margin-top: 50px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
         .report-btn { display: inline-block; margin-top: 15px; padding: 12px 30px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
         .report-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        
+        .pull-to-refresh { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px; z-index: 1000; transition: top 0.3s ease; }
+        .pull-to-refresh.visible { top: 20px; }
+        .refresh-spinner { width: 40px; height: 40px; border: 3px solid rgba(59, 130, 246, 0.2); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; opacity: 0; transition: opacity 0.3s ease; }
+        .refresh-spinner.active { opacity: 1; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <div class="pull-to-refresh">
+        <div class="refresh-spinner"></div>
+    </div>
+    
     <header>
         <h1>🎥 Calvary Livestream Troubleshooting</h1>
         <p class="subtitle">Quick solutions for common livestream issues</p>
@@ -654,6 +664,106 @@ clearSearchBtn.addEventListener('click', () => {
     searchIcon.style.display = 'block';
     renderAll();
     searchBar.focus();
+});
+
+// ===== PULL TO REFRESH IMPLEMENTATION =====
+// iOS-style pull-to-refresh for mobile browsers
+
+const pullToRefreshElement = document.querySelector('.pull-to-refresh');
+const refreshSpinner = document.querySelector('.refresh-spinner');
+
+let touchStartY = 0;           // Where the touch started
+let touchCurrentY = 0;         // Current touch position
+let isPulling = false;         // Whether user is actively pulling
+let isRefreshing = false;      // Whether refresh is in progress
+const pullThreshold = 80;      // How far to pull before triggering refresh
+
+// STEP 1: Detect when touch starts (only if at top of page)
+document.addEventListener('touchstart', e => {
+    // Only activate if scrolled all the way to the top
+    if (window.scrollY === 0 && !isRefreshing) {
+        touchStartY = e.touches[0].clientY;
+        touchCurrentY = touchStartY;
+        isPulling = true;
+    }
+}, { passive: true });
+
+// STEP 2: Track finger movement as user pulls down
+document.addEventListener('touchmove', e => {
+    if (!isPulling || isRefreshing) return;
+    
+    // Only activate if still at top of page
+    if (window.scrollY === 0) {
+        touchCurrentY = e.touches[0].clientY;
+        const pullDistance = touchCurrentY - touchStartY;
+        
+        // If pulling down (positive distance)
+        if (pullDistance > 0) {
+            // Show and animate the spinner based on pull distance
+            const progress = Math.min(pullDistance / pullThreshold, 1);
+            
+            // Fade in spinner as user pulls
+            refreshSpinner.style.opacity = progress;
+            
+            // Move spinner down smoothly (max 60px)
+            const spinnerOffset = Math.min(pullDistance * 0.5, 60);
+            pullToRefreshElement.style.top = `${-60 + spinnerOffset}px`;
+            
+            // Start spinning animation when past threshold
+            if (pullDistance > pullThreshold) {
+                refreshSpinner.classList.add('active');
+            } else {
+                refreshSpinner.classList.remove('active');
+            }
+        }
+    } else {
+        // User scrolled down, cancel the pull
+        isPulling = false;
+        resetPullToRefresh();
+    }
+}, { passive: true });
+
+// STEP 3: Handle when user releases finger
+document.addEventListener('touchend', () => {
+    if (!isPulling || isRefreshing) return;
+    
+    const pullDistance = touchCurrentY - touchStartY;
+    
+    // If pulled past threshold, trigger refresh
+    if (pullDistance > pullThreshold) {
+        isRefreshing = true;
+        
+        // Show spinner in final position
+        pullToRefreshElement.classList.add('visible');
+        refreshSpinner.classList.add('active');
+        refreshSpinner.style.opacity = '1';
+        
+        // Reload page after short delay (feels more natural)
+        setTimeout(() => {
+            location.reload();
+        }, 300);
+    } else {
+        // Didn't pull far enough, reset everything
+        resetPullToRefresh();
+    }
+    
+    isPulling = false;
+});
+
+// STEP 4: Reset function to hide spinner and reset state
+function resetPullToRefresh() {
+    pullToRefreshElement.style.top = '-60px';
+    refreshSpinner.classList.remove('active');
+    refreshSpinner.style.opacity = '0';
+    pullToRefreshElement.classList.remove('visible');
+}
+
+// STEP 5: Reset if user scrolls away from top
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 0 && isPulling) {
+        isPulling = false;
+        resetPullToRefresh();
+    }
 });
 
 document.addEventListener('click', e => {
