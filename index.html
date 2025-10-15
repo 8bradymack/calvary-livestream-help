@@ -6,71 +6,556 @@
     <title>Calvary Livestream Troubleshooting</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; color: #333; line-height: 1.6; padding-bottom: 60px; }
-        header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 20px 20px 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 1.8em; margin-bottom: 5px; font-weight: 600; }
-        .subtitle { font-size: 0.95em; opacity: 0.9; margin-bottom: 20px; }
-        .search-container { max-width: 600px; margin: -20px auto 0; padding: 0 20px; position: relative; z-index: 10; }
-        #searchBar { width: 100%; padding: 16px 50px 16px 20px; font-size: 1.1em; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); outline: none; transition: box-shadow 0.3s; }
-        #searchBar::placeholder { color: #999; }
-        #searchBar:focus { box-shadow: 0 6px 30px rgba(59,130,246,0.3); }
-        .search-icons-container { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); }
-        .search-icon { color: #999; font-size: 1.3em; cursor: default; }
-        .clear-search { color: #666; font-size: 1.1em; cursor: pointer; background: #e5e7eb; border-radius: 50%; width: 24px; height: 24px; display: none; align-items: center; justify-content: center; transition: all 0.2s; font-weight: bold; }
-        .clear-search:hover { background: #d1d5db; color: #333; }
-        .clear-search.active { display: flex; }
-        .suggestions-dropdown { position: absolute; top: 100%; left: 20px; right: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); margin-top: 8px; max-height: 400px; overflow-y: auto; display: none; z-index: 100; }
-        .suggestions-dropdown.active { display: block; }
-        .suggestion-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
-        .suggestion-item:hover { background: #f8fafc; }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-question { font-weight: 600; color: #1e3a8a; font-size: 0.95em; margin-bottom: 4px; }
-        .suggestion-preview { font-size: 0.85em; color: #666; }
-        .suggestion-category { display: inline-block; padding: 2px 8px; background: #e0f2fe; color: #0369a1; border-radius: 8px; font-size: 0.7em; font-weight: 600; margin-top: 4px; }
-        .highlight { background: #fef3c7; padding: 2px 4px; border-radius: 2px; font-weight: 600; }
-        .search-stats { text-align: center; color: #666; font-size: 0.9em; margin: 20px 0 10px; }
-        .recent-searches { max-width: 600px; margin: 15px auto 0; padding: 0 20px; }
-        .recent-searches-title { font-size: 0.85em; color: rgba(255,255,255,0.85); margin-bottom: 8px; font-weight: 600; }
-        .recent-tag { display: inline-block; padding: 6px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 16px; font-size: 0.85em; margin: 4px; cursor: pointer; transition: all 0.2s; color: #666; }
-        .recent-tag:hover { border-color: #3b82f6; color: #3b82f6; transform: translateY(-1px); background: #f8fafc; }
-        .clear-recent { display: inline-block; padding: 6px 12px; background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 0.85em; cursor: pointer; margin-left: 8px; }
-        .clear-recent:hover { color: white; }
-        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        .categories { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; justify-content: center; }
-        .category-btn { padding: 10px 20px; background: white; border: 2px solid #e5e7eb; border-radius: 25px; cursor: pointer; font-size: 0.95em; transition: all 0.3s; color: #666; font-weight: 500; }
-        .category-btn:hover { border-color: #3b82f6; color: #3b82f6; transform: translateY(-2px); }
-        .category-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .faq-list { display: flex; flex-direction: column; gap: 15px; }
-        .faq-item { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
-        .faq-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); border-color: #3b82f6; }
-        .faq-item.pinned { border-left: 4px solid #f59e0b; }
-        .faq-question { font-size: 1.15em; font-weight: 600; color: #1e3a8a; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .faq-category { display: inline-block; padding: 4px 12px; background: #e0f2fe; color: #0369a1; border-radius: 12px; font-size: 0.75em; font-weight: 600; margin-top: 8px; }
-        .faq-preview { color: #666; font-size: 0.95em; margin-top: 8px; line-height: 1.5; }
-        .faq-item.expanded .faq-preview { display: none; }
-        .faq-answer { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; color: #444; line-height: 1.7; display: none; }
-        .faq-answer.expanded { display: block; }
-        .faq-answer h3 { color: #1e3a8a; font-size: 1.05em; margin-top: 15px; margin-bottom: 8px; }
-        .faq-answer ul, .faq-answer ol { margin-left: 20px; margin-top: 8px; }
-        .faq-answer li { margin-bottom: 6px; }
-        .faq-answer strong { color: #1e3a8a; }
-        .expand-icon { color: #3b82f6; font-size: 1.2em; transition: transform 0.3s; }
-        .faq-item.expanded .expand-icon { transform: rotate(180deg); }
-        .section-title { font-size: 1.3em; font-weight: 600; color: #1e3a8a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .pinned-section { margin-bottom: 40px; }
-        .pin-icon { color: #f59e0b; }
-        .no-results { text-align: center; padding: 60px 20px; color: #666; display: none; }
-        .no-results-icon { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
-        .no-results h2 { font-size: 1.5em; margin-bottom: 10px; color: #444; }
-        footer { text-align: center; padding: 30px 20px; color: #666; font-size: 0.9em; background: white; margin-top: 50px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .report-btn { display: inline-block; margin-top: 15px; padding: 12px 30px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
-        .report-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            color: #e2e8f0; 
+            line-height: 1.6; 
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
         
-        .pull-to-refresh { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px; z-index: 1000; transition: top 0.3s ease; }
+        header { 
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            color: white; 
+            padding: 30px 20px 40px; 
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 { 
+            font-size: 2em; 
+            margin-bottom: 8px; 
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle { font-size: 1em; opacity: 0.8; margin-bottom: 25px; color: #cbd5e1; }
+        
+        .search-container { max-width: 600px; margin: 0 auto; padding: 0 20px; position: relative; }
+        #searchBar { 
+            width: 100%; 
+            padding: 18px 50px 18px 24px; 
+            font-size: 1.1em; 
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            outline: none; 
+            transition: all 0.3s;
+            color: white;
+        }
+        #searchBar::placeholder { color: #64748b; }
+        #searchBar:focus { 
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 8px 32px rgba(0,0,0,0.3);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .search-icons-container { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); }
+        .search-icon { color: #64748b; font-size: 1.3em; cursor: default; }
+        .clear-search { 
+            color: #64748b; 
+            font-size: 1.1em; 
+            cursor: pointer; 
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 50%; 
+            width: 28px; 
+            height: 28px; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.2s; 
+            font-weight: bold;
+        }
+        .clear-search:hover { background: rgba(71, 85, 105, 0.9); color: #cbd5e1; }
+        .clear-search.active { display: flex; }
+        
+        .suggestions-dropdown { 
+            position: absolute; 
+            top: 100%; 
+            left: 20px; 
+            right: 20px; 
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            margin-top: 12px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            display: none; 
+            z-index: 100;
+        }
+        .suggestions-dropdown.active { display: block; }
+        .suggestion-item { 
+            padding: 16px 20px; 
+            cursor: pointer; 
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            transition: all 0.2s;
+        }
+        .suggestion-item:hover { background: rgba(59, 130, 246, 0.1); }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-question { font-weight: 600; color: #60a5fa; font-size: 0.95em; margin-bottom: 6px; }
+        .suggestion-preview { font-size: 0.85em; color: #94a3b8; }
+        .suggestion-category { 
+            display: inline-block; 
+            padding: 3px 10px; 
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-radius: 10px; 
+            font-size: 0.7em; 
+            font-weight: 600; 
+            margin-top: 6px;
+        }
+        
+        .highlight { background: rgba(251, 191, 36, 0.3); padding: 2px 4px; border-radius: 3px; font-weight: 600; color: #fbbf24; }
+        .search-stats { text-align: center; color: #94a3b8; font-size: 0.95em; margin: 25px 0 15px; }
+        
+        .recent-searches { max-width: 600px; margin: 20px auto 0; padding: 0 20px; }
+        .recent-searches-title { font-size: 0.85em; color: rgba(255,255,255,0.6); margin-bottom: 10px; font-weight: 600; }
+        .recent-tag { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            background: rgba(51, 65, 85, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px; 
+            font-size: 0.85em; 
+            margin: 4px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            color: #cbd5e1;
+        }
+        .recent-tag:hover { 
+            border-color: #3b82f6; 
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            transform: translateY(-2px); 
+        }
+        .clear-recent { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            background: transparent; 
+            border: none; 
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85em; 
+            cursor: pointer; 
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        .clear-recent:hover { color: #ef4444; }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        .emergency-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .emergency-btn {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .emergency-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .emergency-btn:hover::before {
+            left: 100%;
+        }
+        
+        .emergency-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+        
+        .emergency-btn.audio { 
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(202, 138, 4, 0.1) 100%);
+            border-color: rgba(234, 179, 8, 0.4);
+        }
+        .emergency-btn.audio:hover { border-color: #eab308; box-shadow: 0 20px 40px rgba(234, 179, 8, 0.3); }
+        
+        .emergency-btn.stream { 
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        .emergency-btn.stream:hover { border-color: #3b82f6; box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3); }
+        
+        .emergency-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .emergency-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .emergency-subtitle {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .categories { 
+            display: flex; 
+            gap: 12px; 
+            flex-wrap: wrap; 
+            margin-bottom: 35px; 
+            justify-content: center;
+        }
+        
+        .category-btn { 
+            padding: 12px 24px; 
+            background: rgba(51, 65, 85, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-size: 0.95em; 
+            transition: all 0.3s; 
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+        .category-btn:hover { 
+            border-color: #3b82f6; 
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+        }
+        .category-btn.active { 
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; 
+            border-color: #3b82f6;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .faq-list { display: flex; flex-direction: column; gap: 20px; }
+        
+        .faq-item { 
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px; 
+            padding: 25px; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .faq-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .faq-item:hover::before { opacity: 1; }
+        
+        .faq-item:hover { 
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+            transform: translateY(-3px);
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+        }
+        
+        .faq-item.pinned { border-left: 4px solid #f59e0b; }
+        .faq-item.pinned::before { display: none; }
+        
+        .faq-question { 
+            font-size: 1.2em; 
+            font-weight: 600; 
+            color: #e2e8f0;
+            margin-bottom: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        
+        .faq-category { 
+            display: inline-block; 
+            padding: 6px 14px; 
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-radius: 12px; 
+            font-size: 0.75em; 
+            font-weight: 600; 
+            margin-top: 10px;
+        }
+        
+        .faq-preview { 
+            color: #94a3b8;
+            font-size: 0.95em; 
+            margin-top: 10px; 
+            line-height: 1.6;
+        }
+        .faq-item.expanded .faq-preview { display: none; }
+        
+        .faq-answer { 
+            margin-top: 20px; 
+            padding-top: 20px; 
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+            color: #cbd5e1;
+            line-height: 1.8; 
+            display: none;
+        }
+        .faq-answer.expanded { display: block; }
+        .faq-answer h3 { color: #60a5fa; font-size: 1.1em; margin-top: 20px; margin-bottom: 12px; }
+        .faq-answer ul, .faq-answer ol { margin-left: 20px; margin-top: 10px; }
+        .faq-answer li { 
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 10px;
+        }
+        .faq-answer ol li::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            background: #3b82f6;
+            border-radius: 50%;
+        }
+        .faq-answer strong { color: #60a5fa; }
+        
+        .step-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        
+        .step-checkbox:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .step-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+            flex-shrink: 0;
+        }
+        
+        .step-checkbox label {
+            cursor: pointer;
+            flex: 1;
+            user-select: none;
+        }
+        
+        .step-checkbox.completed label {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        .feedback-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(51, 65, 85, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .feedback-question {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+        
+        .feedback-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .feedback-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            background: rgba(30, 41, 59, 0.6);
+            color: #cbd5e1;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .feedback-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .feedback-btn.yes {
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        
+        .feedback-btn.yes:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #4ade80;
+        }
+        
+        .feedback-btn.no {
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        
+        .feedback-btn.no:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #f87171;
+        }
+        
+        .feedback-thanks {
+            color: #4ade80;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px;
+            display: none;
+        }
+        
+        .feedback-thanks.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .expand-icon { 
+            color: #3b82f6;
+            font-size: 1.2em; 
+            transition: transform 0.3s;
+        }
+        .faq-item.expanded .expand-icon { transform: rotate(180deg); }
+        
+        .section-title { 
+            font-size: 1.5em; 
+            font-weight: 700; 
+            color: #e2e8f0;
+            margin-bottom: 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+        }
+        
+        .pinned-section { margin-bottom: 50px; }
+        .pin-icon { color: #f59e0b; font-size: 1.2em; }
+        
+        .no-results { 
+            text-align: center; 
+            padding: 80px 20px; 
+            color: #64748b;
+            display: none;
+        }
+        .no-results-icon { font-size: 4em; margin-bottom: 20px; opacity: 0.5; }
+        .no-results h2 { font-size: 1.8em; margin-bottom: 15px; color: #94a3b8; }
+        
+        footer { 
+            text-align: center; 
+            padding: 40px 20px; 
+            color: #64748b;
+            font-size: 0.9em; 
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            margin-top: 60px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .report-btn { 
+            display: inline-block; 
+            margin-top: 20px; 
+            padding: 14px 35px; 
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; 
+            text-decoration: none; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+        .report-btn:hover { 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+        }
+        
+        .pull-to-refresh { 
+            position: fixed; 
+            top: -60px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 40px; 
+            height: 40px; 
+            z-index: 1000; 
+            transition: top 0.3s ease;
+        }
         .pull-to-refresh.visible { top: 20px; }
-        .refresh-spinner { width: 40px; height: 40px; border: 3px solid rgba(59, 130, 246, 0.2); border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; opacity: 0; transition: opacity 0.3s ease; }
+        .refresh-spinner { 
+            width: 40px; 
+            height: 40px; 
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%; 
+            animation: spin 0.8s linear infinite; 
+            opacity: 0; 
+            transition: opacity 0.3s ease;
+        }
         .refresh-spinner.active { opacity: 1; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; }
+            .emergency-actions { grid-template-columns: 1fr; }
+            .emergency-btn { padding: 25px; }
+            .emergency-icon { font-size: 2.5em; }
+        }
     </style>
 </head>
 <body>
@@ -79,8 +564,8 @@
     </div>
     
     <header>
-        <h1>🎥 Calvary Livestream Troubleshooting</h1>
-        <p class="subtitle">Quick solutions for common livestream issues</p>
+        <h1>🎥 Calvary Livestream</h1>
+        <p class="subtitle">Emergency Troubleshooting Hub</p>
         <div class="search-container">
             <input type="text" id="searchBar" placeholder="Search: 'no sound', 'camera dark', 'deck broken'..." autocomplete="off">
             <div class="search-icons-container">
@@ -96,6 +581,24 @@
     </header>
 
     <div class="container">
+        <div class="emergency-actions" id="emergencyActions">
+            <div class="emergency-btn" data-issue="no-sound">
+                <span class="emergency-icon">🔇</span>
+                <div class="emergency-title">NO AUDIO</div>
+                <div class="emergency-subtitle">Fix sound issues instantly</div>
+            </div>
+            <div class="emergency-btn audio" data-issue="dark-camera">
+                <span class="emergency-icon">🌑</span>
+                <div class="emergency-title">CAMERA DARK</div>
+                <div class="emergency-subtitle">Brightness & exposure fix</div>
+            </div>
+            <div class="emergency-btn stream" data-issue="stream-down">
+                <span class="emergency-icon">📡</span>
+                <div class="emergency-title">STREAM DOWN</div>
+                <div class="emergency-subtitle">Restream not working</div>
+            </div>
+        </div>
+        
         <div class="search-stats" id="searchStats"></div>
         
         <div class="categories" id="categories">
@@ -121,7 +624,7 @@
         <div class="no-results" id="noResults">
             <div class="no-results-icon">🔍</div>
             <h2>No matches found</h2>
-            <p>Try different keywords</p>
+            <p>Try different keywords or use the emergency buttons above</p>
         </div>
     </div>
 
@@ -131,17 +634,17 @@
         <a href="#" id="reportBtn" class="report-btn">📧 Report an Issue</a>
     </footer>
 
-    <div id="contactModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;padding:20px;">
-        <div style="max-width:600px;margin:50px auto;background:white;border-radius:12px;padding:30px;">
-            <h2 style="color:#1e3a8a;margin-bottom:10px;">Report an Issue</h2>
+    <div id="contactModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:1000;padding:20px;">
+        <div style="max-width:600px;margin:50px auto;background:rgba(30, 41, 59, 0.95);backdrop-filter:blur(20px);border:1px solid rgba(59, 130, 246, 0.3);border-radius:20px;padding:35px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+            <h2 style="color:#60a5fa;margin-bottom:15px;font-size:1.8em;">Report an Issue</h2>
             <form id="contactForm" action="https://formspree.io/f/xqayyzrr" method="POST">
                 <div style="margin-bottom:20px;">
-                    <label style="display:block;font-weight:600;margin-bottom:8px;">Your Name (Optional)</label>
-                    <input type="text" name="name" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;">
+                    <label style="display:block;font-weight:600;margin-bottom:10px;color:#e2e8f0;">Your Name (Optional)</label>
+                    <input type="text" name="name" style="width:100%;padding:14px;border:2px solid rgba(59, 130, 246, 0.3);background:rgba(15, 23, 42, 0.6);color:white;border-radius:10px;">
                 </div>
                 <div style="margin-bottom:20px;">
-                    <label style="display:block;font-weight:600;margin-bottom:8px;">Issue Category</label>
-                    <select name="category" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;background:white;">
+                    <label style="display:block;font-weight:600;margin-bottom:10px;color:#e2e8f0;">Issue Category</label>
+                    <select name="category" style="width:100%;padding:14px;border:2px solid rgba(59, 130, 246, 0.3);background:rgba(15, 23, 42, 0.6);color:white;border-radius:10px;">
                         <option value="">Select...</option>
                         <option>Setup/Shutdown</option>
                         <option>Video</option>
@@ -153,15 +656,15 @@
                     </select>
                 </div>
                 <div style="margin-bottom:25px;">
-                    <label style="display:block;font-weight:600;margin-bottom:8px;">Description *</label>
-                    <textarea name="message" required style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;min-height:150px;"></textarea>
+                    <label style="display:block;font-weight:600;margin-bottom:10px;color:#e2e8f0;">Description *</label>
+                    <textarea name="message" required style="width:100%;padding:14px;border:2px solid rgba(59, 130, 246, 0.3);background:rgba(15, 23, 42, 0.6);color:white;border-radius:10px;min-height:150px;"></textarea>
                 </div>
-                <div style="display:flex;gap:10px;justify-content:flex-end;">
-                    <button type="button" id="cancelBtn" style="padding:12px 24px;background:#e5e7eb;border:none;border-radius:8px;cursor:pointer;">Cancel</button>
-                    <button type="submit" style="padding:12px 24px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">Submit</button>
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" id="cancelBtn" style="padding:14px 28px;background:rgba(51, 65, 85, 0.6);color:#cbd5e1;border:2px solid rgba(59, 130, 246, 0.2);border-radius:10px;cursor:pointer;font-weight:600;transition:all 0.3s;">Cancel</button>
+                    <button type="submit" style="padding:14px 28px;background:linear-gradient(135deg, #3b82f6, #2563eb);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;box-shadow:0 8px 20px rgba(59, 130, 246, 0.3);transition:all 0.3s;">Submit</button>
                 </div>
             </form>
-            <div id="successMessage" style="display:none;margin-top:20px;padding:15px;background:#d1fae5;border-radius:8px;">✓ Submitted!</div>
+            <div id="successMessage" style="display:none;margin-top:20px;padding:18px;background:rgba(34, 197, 94, 0.2);border:1px solid rgba(34, 197, 94, 0.4);border-radius:10px;color:#4ade80;font-weight:600;text-align:center;">✓ Submitted!</div>
         </div>
     </div>
 
@@ -237,6 +740,13 @@ const problemPatterns = [
     {pattern: /(internet|network|connection|ethernet|wifi)/i, boost: ['ethernet', 'network', 'dock', 'blue light']}
 ];
 
+// Emergency button mapping
+const emergencyMap = {
+    'no-sound': 4,
+    'dark-camera': 3,
+    'stream-down': 5
+};
+
 let recentSearches = [];
 const MAX_RECENT = 5;
 
@@ -285,7 +795,6 @@ function clearRecentSearches() {
 function expandSearchQuery(query) {
     let words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
     
-    // Remove common stop words
     const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
     words = words.filter(w => !stopWords.includes(w) && w !== '/');
     
@@ -316,7 +825,6 @@ function expandSearchQuery(query) {
 function highlightText(text, searchTerms) {
     if (!searchTerms || searchTerms.length === 0) return text;
     
-    // Filter out stop words from highlighting
     const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
     const termsToHighlight = searchTerms.filter(term => !stopWords.includes(term.toLowerCase()) && term.length > 1);
     
@@ -335,7 +843,6 @@ function intelligentSearch(query) {
     const originalQuery = query;
     const expandedQuery = expandSearchQuery(query);
     
-    // Remove stop words from search terms
     const stopWords = ['a', 'an', 'the', 'or', 'and', 'on', 'in', 'at', 'to', 'for', 'of', 'is', 'are'];
     const searchTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.includes(w));
     
@@ -487,7 +994,6 @@ function intelligentSearch(query) {
 }
 
 let suggestionTimeout;
-let currentSuggestionIndex = -1;
 
 function showSuggestions(query) {
     clearTimeout(suggestionTimeout);
@@ -507,7 +1013,6 @@ function showSuggestions(query) {
         }
         
         dropdown.innerHTML = results.map((faq, index) => {
-            // Strip HTML and add spaces between elements for preview
             const cleanAnswer = faq.answer
                 .replace(/<\/?(h3|ol|ul|li|p|strong)[^>]*>/gi, ' ')
                 .replace(/<[^>]*>/g, '')
@@ -555,12 +1060,43 @@ function showSuggestions(query) {
 let currentCategory = 'all';
 let currentSearch = '';
 
+function convertToCheckboxes(htmlContent) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    doc.querySelectorAll('ol li, ul li').forEach((li, index) => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `step-${Date.now()}-${index}`;
+        
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id;
+        label.innerHTML = li.innerHTML;
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'step-checkbox';
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                wrapper.classList.add('completed');
+            } else {
+                wrapper.classList.remove('completed');
+            }
+        });
+        
+        li.parentNode.replaceChild(wrapper, li);
+    });
+    
+    return doc.body.innerHTML;
+}
+
 function renderFAQ(faq, container) {
     const item = document.createElement('div');
     item.className = `faq-item ${faq.pinned ? 'pinned' : ''}`;
     item.dataset.id = faq.id;
     
-    // Strip HTML and add spaces between elements for preview
     const cleanAnswer = faq.answer
         .replace(/<\/?(h3|ol|ul|li|p|strong)[^>]*>/gi, ' ')
         .replace(/<[^>]*>/g, '')
@@ -571,14 +1107,30 @@ function renderFAQ(faq, container) {
     const highlightedQuestion = faq.searchTerms ? highlightText(faq.question, faq.searchTerms) : faq.question;
     const highlightedPreview = faq.searchTerms ? highlightText(preview, faq.searchTerms) : preview;
     
+    const answerWithCheckboxes = convertToCheckboxes(faq.answer);
+    
     item.innerHTML = `
         <div class="faq-question"><span>${highlightedQuestion}</span><span class="expand-icon">▼</span></div>
         <span class="faq-category">${faq.category}</span>
         <div class="faq-preview">${highlightedPreview}</div>
-        <div class="faq-answer">${faq.answer}</div>
+        <div class="faq-answer">
+            ${answerWithCheckboxes}
+            <div class="feedback-section">
+                <div class="feedback-question">Did this solve your problem?</div>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn yes">✓ Yes, it worked!</button>
+                    <button class="feedback-btn no">✗ No, still broken</button>
+                </div>
+                <div class="feedback-thanks"></div>
+            </div>
+        </div>
     `;
     
-    item.onclick = () => {
+    item.onclick = (e) => {
+        if (e.target.closest('.step-checkbox') || e.target.closest('.feedback-section')) {
+            return;
+        }
+        
         const isExpanded = item.classList.contains('expanded');
         document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('expanded'));
         document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('expanded'));
@@ -586,6 +1138,30 @@ function renderFAQ(faq, container) {
             item.classList.add('expanded');
             item.querySelector('.faq-answer').classList.add('expanded');
         }
+    };
+    
+    const yesBtn = item.querySelector('.feedback-btn.yes');
+    const noBtn = item.querySelector('.feedback-btn.no');
+    const thanksMsg = item.querySelector('.feedback-thanks');
+    const feedbackBtns = item.querySelector('.feedback-buttons');
+    
+    yesBtn.onclick = (e) => {
+        e.stopPropagation();
+        feedbackBtns.style.display = 'none';
+        thanksMsg.textContent = '✓ Great! Glad we could help!';
+        thanksMsg.classList.add('show');
+    };
+    
+    noBtn.onclick = (e) => {
+        e.stopPropagation();
+        feedbackBtns.style.display = 'none';
+        thanksMsg.textContent = '📧 Please report this issue so we can improve!';
+        thanksMsg.style.color = '#fbbf24';
+        thanksMsg.classList.add('show');
+        
+        setTimeout(() => {
+            document.getElementById('reportBtn').click();
+        }, 1500);
     };
     
     container.appendChild(item);
@@ -605,6 +1181,7 @@ function renderAll() {
     if (currentSearch) {
         filtered = intelligentSearch(currentSearch);
         document.getElementById('pinnedSection').style.display = 'none';
+        document.getElementById('emergencyActions').style.display = 'none';
         
         if (filtered.length === 0) {
             document.getElementById('noResults').style.display = 'block';
@@ -622,6 +1199,7 @@ function renderAll() {
         saveRecentSearch(currentSearch);
     } else {
         document.getElementById('pinnedSection').style.display = 'block';
+        document.getElementById('emergencyActions').style.display = 'grid';
         document.getElementById('noResults').style.display = 'none';
         document.getElementById('faqList').style.display = 'flex';
         document.getElementById('searchStats').textContent = '';
@@ -666,106 +1244,6 @@ clearSearchBtn.addEventListener('click', () => {
     searchBar.focus();
 });
 
-// ===== PULL TO REFRESH IMPLEMENTATION =====
-// iOS-style pull-to-refresh for mobile browsers
-
-const pullToRefreshElement = document.querySelector('.pull-to-refresh');
-const refreshSpinner = document.querySelector('.refresh-spinner');
-
-let touchStartY = 0;           // Where the touch started
-let touchCurrentY = 0;         // Current touch position
-let isPulling = false;         // Whether user is actively pulling
-let isRefreshing = false;      // Whether refresh is in progress
-const pullThreshold = 80;      // How far to pull before triggering refresh
-
-// STEP 1: Detect when touch starts (only if at top of page)
-document.addEventListener('touchstart', e => {
-    // Only activate if scrolled all the way to the top
-    if (window.scrollY === 0 && !isRefreshing) {
-        touchStartY = e.touches[0].clientY;
-        touchCurrentY = touchStartY;
-        isPulling = true;
-    }
-}, { passive: true });
-
-// STEP 2: Track finger movement as user pulls down
-document.addEventListener('touchmove', e => {
-    if (!isPulling || isRefreshing) return;
-    
-    // Only activate if still at top of page
-    if (window.scrollY === 0) {
-        touchCurrentY = e.touches[0].clientY;
-        const pullDistance = touchCurrentY - touchStartY;
-        
-        // If pulling down (positive distance)
-        if (pullDistance > 0) {
-            // Show and animate the spinner based on pull distance
-            const progress = Math.min(pullDistance / pullThreshold, 1);
-            
-            // Fade in spinner as user pulls
-            refreshSpinner.style.opacity = progress;
-            
-            // Move spinner down smoothly (max 60px)
-            const spinnerOffset = Math.min(pullDistance * 0.5, 60);
-            pullToRefreshElement.style.top = `${-60 + spinnerOffset}px`;
-            
-            // Start spinning animation when past threshold
-            if (pullDistance > pullThreshold) {
-                refreshSpinner.classList.add('active');
-            } else {
-                refreshSpinner.classList.remove('active');
-            }
-        }
-    } else {
-        // User scrolled down, cancel the pull
-        isPulling = false;
-        resetPullToRefresh();
-    }
-}, { passive: true });
-
-// STEP 3: Handle when user releases finger
-document.addEventListener('touchend', () => {
-    if (!isPulling || isRefreshing) return;
-    
-    const pullDistance = touchCurrentY - touchStartY;
-    
-    // If pulled past threshold, trigger refresh
-    if (pullDistance > pullThreshold) {
-        isRefreshing = true;
-        
-        // Show spinner in final position
-        pullToRefreshElement.classList.add('visible');
-        refreshSpinner.classList.add('active');
-        refreshSpinner.style.opacity = '1';
-        
-        // Reload page after short delay (feels more natural)
-        setTimeout(() => {
-            location.reload();
-        }, 300);
-    } else {
-        // Didn't pull far enough, reset everything
-        resetPullToRefresh();
-    }
-    
-    isPulling = false;
-});
-
-// STEP 4: Reset function to hide spinner and reset state
-function resetPullToRefresh() {
-    pullToRefreshElement.style.top = '-60px';
-    refreshSpinner.classList.remove('active');
-    refreshSpinner.style.opacity = '0';
-    pullToRefreshElement.classList.remove('visible');
-}
-
-// STEP 5: Reset if user scrolls away from top
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 0 && isPulling) {
-        isPulling = false;
-        resetPullToRefresh();
-    }
-});
-
 document.addEventListener('click', e => {
     if (!e.target.closest('.search-container')) {
         document.getElementById('suggestionsDropdown').classList.remove('active');
@@ -781,6 +1259,28 @@ document.querySelectorAll('.category-btn').forEach(btn => btn.onclick = () => {
     renderAll();
 });
 
+document.querySelectorAll('.emergency-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const issueType = btn.dataset.issue;
+        const faqId = emergencyMap[issueType];
+        const faq = faqData.find(f => f.id === faqId);
+        
+        if (faq) {
+            document.getElementById('searchBar').value = faq.question;
+            currentSearch = faq.question;
+            renderAll();
+            
+            setTimeout(() => {
+                const faqElement = document.querySelector(`.faq-item[data-id="${faqId}"]`);
+                if (faqElement) {
+                    faqElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    faqElement.click();
+                }
+            }, 100);
+        }
+    });
+});
+
 document.getElementById('reportBtn').onclick = e => {
     e.preventDefault();
     document.getElementById('contactModal').style.display = 'block';
@@ -788,6 +1288,12 @@ document.getElementById('reportBtn').onclick = e => {
 
 document.getElementById('cancelBtn').onclick = () => {
     document.getElementById('contactModal').style.display = 'none';
+};
+
+document.getElementById('contactModal').onclick = e => {
+    if (e.target.id === 'contactModal') {
+        document.getElementById('contactModal').style.display = 'none';
+    }
 };
 
 document.getElementById('contactForm').onsubmit = async e => {
@@ -803,6 +1309,83 @@ document.getElementById('contactForm').onsubmit = async e => {
         setTimeout(() => document.getElementById('contactModal').style.display = 'none', 3000);
     }
 };
+
+const pullToRefreshElement = document.querySelector('.pull-to-refresh');
+const refreshSpinner = document.querySelector('.refresh-spinner');
+
+let touchStartY = 0;
+let touchCurrentY = 0;
+let isPulling = false;
+let isRefreshing = false;
+const pullThreshold = 80;
+
+document.addEventListener('touchstart', e => {
+    if (window.scrollY === 0 && !isRefreshing) {
+        touchStartY = e.touches[0].clientY;
+        touchCurrentY = touchStartY;
+        isPulling = true;
+    }
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+    if (!isPulling || isRefreshing) return;
+    
+    if (window.scrollY === 0) {
+        touchCurrentY = e.touches[0].clientY;
+        const pullDistance = touchCurrentY - touchStartY;
+        
+        if (pullDistance > 0) {
+            const progress = Math.min(pullDistance / pullThreshold, 1);
+            refreshSpinner.style.opacity = progress;
+            const spinnerOffset = Math.min(pullDistance * 0.5, 60);
+            pullToRefreshElement.style.top = `${-60 + spinnerOffset}px`;
+            
+            if (pullDistance > pullThreshold) {
+                refreshSpinner.classList.add('active');
+            } else {
+                refreshSpinner.classList.remove('active');
+            }
+        }
+    } else {
+        isPulling = false;
+        resetPullToRefresh();
+    }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+    if (!isPulling || isRefreshing) return;
+    
+    const pullDistance = touchCurrentY - touchStartY;
+    
+    if (pullDistance > pullThreshold) {
+        isRefreshing = true;
+        pullToRefreshElement.classList.add('visible');
+        refreshSpinner.classList.add('active');
+        refreshSpinner.style.opacity = '1';
+        
+        setTimeout(() => {
+            location.reload();
+        }, 300);
+    } else {
+        resetPullToRefresh();
+    }
+    
+    isPulling = false;
+});
+
+function resetPullToRefresh() {
+    pullToRefreshElement.style.top = '-60px';
+    refreshSpinner.classList.remove('active');
+    refreshSpinner.style.opacity = '0';
+    pullToRefreshElement.classList.remove('visible');
+}
+
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 0 && isPulling) {
+        isPulling = false;
+        resetPullToRefresh();
+    }
+});
 
 loadRecentSearches();
 renderRecentSearches();
